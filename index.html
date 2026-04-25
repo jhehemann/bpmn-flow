@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>BPMN Flow</title>
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css">
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-js.css">
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn.css">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background: #fafafa; }
+    #canvas { width: 100vw; height: 100vh; }
+    #status {
+      position: fixed; top: 10px; left: 10px; z-index: 10;
+      padding: 6px 10px; background: rgba(255,255,255,0.92);
+      border: 1px solid #ddd; border-radius: 4px;
+      font-size: 12px; color: #333;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    #status.error { color: #b00020; border-color: #f5c2c7; }
+    #controls {
+      position: fixed; top: 10px; right: 10px; z-index: 10;
+      display: flex; gap: 6px;
+    }
+    #controls button {
+      padding: 6px 10px; font-size: 12px; cursor: pointer;
+      background: #fff; border: 1px solid #ccc; border-radius: 4px;
+    }
+    #controls button:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div id="canvas"></div>
+  <div id="status">Lade…</div>
+  <div id="controls">
+    <label style="font-size:12px; display:flex; align-items:center; gap:4px; background:#fff; padding:4px 8px; border:1px solid #ccc; border-radius:4px;">
+      <input type="checkbox" id="autoReload" checked> Auto-Reload
+    </label>
+    <button id="reloadBtn">Neu laden</button>
+    <button id="fitBtn">Einpassen</button>
+  </div>
+
+  <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-navigated-viewer.production.min.js"></script>
+  <script>
+    const viewer = new BpmnJS({ container: '#canvas' });
+    const statusEl = document.getElementById('status');
+    const autoReloadEl = document.getElementById('autoReload');
+
+    let lastXml = null;
+
+    async function load(force = false) {
+      try {
+        const res = await fetch('flow.bpmn?_=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const xml = await res.text();
+        if (!force && xml === lastXml) return false;
+        lastXml = xml;
+        await viewer.importXML(xml);
+        viewer.get('canvas').zoom('fit-viewport');
+        statusEl.classList.remove('error');
+        statusEl.textContent = 'Geladen — ' + new Date().toLocaleTimeString();
+        return true;
+      } catch (e) {
+        statusEl.classList.add('error');
+        statusEl.textContent = 'Fehler: ' + e.message;
+        console.error(e);
+        return false;
+      }
+    }
+
+    document.getElementById('reloadBtn').onclick = () => load(true);
+    document.getElementById('fitBtn').onclick = () => viewer.get('canvas').zoom('fit-viewport');
+
+    load(true);
+    setInterval(() => { if (autoReloadEl.checked) load(false); }, 1500);
+  </script>
+</body>
+</html>
