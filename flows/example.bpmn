@@ -17,15 +17,17 @@
       <bpmn:incoming>Flow_To_Approval</bpmn:incoming>
       <bpmn:outgoing>Flow_From_Approval</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="End_Event" name="Ende">
+    <bpmn:endEvent id="End_Direct" name="Ende (ohne Freigabe)">
       <bpmn:incoming>Flow_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="End_Approved" name="Ende (nach Freigabe)">
       <bpmn:incoming>Flow_From_Approval</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_Event" targetRef="Do_Task" />
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Do_Task" targetRef="Decision_Gateway" />
-    <bpmn:sequenceFlow id="Flow_To_End" name="nein" sourceRef="Decision_Gateway" targetRef="End_Event" />
+    <bpmn:sequenceFlow id="Flow_To_End" name="nein" sourceRef="Decision_Gateway" targetRef="End_Direct" />
     <bpmn:sequenceFlow id="Flow_To_Approval" name="ja" sourceRef="Decision_Gateway" targetRef="Manual_Approval_Task" />
-    <bpmn:sequenceFlow id="Flow_From_Approval" sourceRef="Manual_Approval_Task" targetRef="End_Event" />
+    <bpmn:sequenceFlow id="Flow_From_Approval" sourceRef="Manual_Approval_Task" targetRef="End_Approved" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Process_1">
     <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="Process_1">
@@ -38,11 +40,14 @@
       <bpmndi:BPMNShape id="Decision_Gateway_di" bpmnElement="Decision_Gateway" isMarkerVisible="true">
         <dc:Bounds x="350" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_Event_di" bpmnElement="End_Event">
-        <dc:Bounds x="657" y="52" width="36" height="36" />
+      <bpmndi:BPMNShape id="End_Direct_di" bpmnElement="End_Direct">
+        <dc:Bounds x="507" y="52" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Manual_Approval_Task_di" bpmnElement="Manual_Approval_Task">
         <dc:Bounds x="475" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Approved_di" bpmnElement="End_Approved">
+        <dc:Bounds x="657" y="192" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
         <di:waypoint x="93" y="70" />
@@ -54,7 +59,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_To_End_di" bpmnElement="Flow_To_End">
         <di:waypoint x="400" y="70" />
-        <di:waypoint x="657" y="70" />
+        <di:waypoint x="507" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_To_Approval_di" bpmnElement="Flow_To_Approval">
         <di:waypoint x="375" y="95" />
@@ -63,8 +68,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_From_Approval_di" bpmnElement="Flow_From_Approval">
         <di:waypoint x="575" y="210" />
-        <di:waypoint x="675" y="210" />
-        <di:waypoint x="675" y="88" />
+        <di:waypoint x="657" y="210" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
