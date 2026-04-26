@@ -10,7 +10,7 @@ Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-Assistant (Claude Co
 
 ## Voraussetzungen
 
-- Node.js ≥ 18 (für Tooling — Layout, Lint)
+- Node.js ≥ 18 (für Tooling — Layout, Lint). Installation: [nodejs.org/en/download](https://nodejs.org/en/download) oder via Versionsmanager wie [nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 - VS Code oder Cursor mit der Extension [`bpmn-io.vs-code-bpmn-io`](https://marketplace.visualstudio.com/items?itemName=bpmn-io.vs-code-bpmn-io). Beim ersten Öffnen des Repos schlägt VS Code die Installation automatisch vor (siehe `.vscode/extensions.json`).
 - Ein AI-Coding-Assistant — entwickelt mit [Claude Code](https://docs.claude.com/en/docs/claude-code); andere Harnesses wie [Codex CLI](https://github.com/openai/codex) sollten analog funktionieren.
 
