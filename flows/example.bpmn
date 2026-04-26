@@ -21,7 +21,7 @@
       <bpmn:incoming>Flow_To_Approval</bpmn:incoming>
       <bpmn:outgoing>Flow_From_Approval</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="End_Direct" name="Ende (ohne Freigabe)">
+    <bpmn:endEvent id="End_Direct" name="Direkt erledigt">
       <bpmn:incoming>Flow_To_End</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:endEvent id="End_Approved" name="Ende (nach Freigabe)">
