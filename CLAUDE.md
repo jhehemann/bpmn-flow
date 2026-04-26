@@ -47,7 +47,11 @@ Lesbare Namen statt Nummern: `Approve_Task` statt `Task_2`, `Decision_Gateway` s
 
 ## Commit-Workflow
 
-Der User editiert `flows/*.bpmn` parallel im VS-Code-BPMN-Modeler. Der Workspace hat `files.autoSave: onFocusChange` aktiviert (`.vscode/settings.json`) — sobald der User den Editor-Fokus verlässt (z.B. ins Terminal wechselt), persistiert VS Code den Buffer auf Disk. Damit ist der Disk-Stand fast immer aktuell, wenn du dran arbeitest. Trotzdem:
+Der User editiert `flows/*.bpmn` parallel im VS-Code-BPMN-Modeler. Der Workspace hat `files.autoSave: onFocusChange` aktiviert (`.vscode/settings.json`) — sobald der User den Editor-Fokus verlässt (z.B. ins Terminal wechselt), persistiert VS Code den Buffer auf Disk. Damit ist der Disk-Stand fast immer aktuell, wenn du dran arbeitest.
+
+Wichtig zum Editor-Verhalten: Der bpmn-io-Editor erkennt deine externen Änderungen *nur* beim Wechsel in den BPMN-Tab und zeigt dann einen „Diagram changed externally"-Dialog. Falls der User den Dialog ignoriert und visuell weiter editiert, überschreibt der nächste Save deine Änderungen kommentarlos. Wenn du nach einem Edit also den Verdacht hast, dass dein Commit gleich überschrieben wird, weise den User aktiv darauf hin, beim nächsten Tab-Wechsel „Reload" zu klicken.
+
+Trotzdem:
 
 1. **Vor jeder Änderung** `git status` prüfen.
    - Clean → loslegen.

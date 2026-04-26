@@ -30,7 +30,7 @@ anweisen → Semantik editieren → npm run layout → npm run validate → comm
 
 1. Anweisung an den Assistant geben (Voice oder Text), z. B. „Füge nach ‚Antrag prüfen' ein exklusives Gateway mit zwei Pfaden ein."
 2. Assistant editiert die Semantik in `flows/<datei>.bpmn`.
-3. `npm run layout` ergänzt/aktualisiert das Diagramm-Interchange. VS Code re-rendert sofort.
+3. `npm run layout` ergänzt/aktualisiert das Diagramm-Interchange. Beim nächsten Wechsel in den BPMN-Tab fragt der Editor „Diagram changed externally, do you want to reload it?" → **immer „Reload" klicken** (siehe Best Practices unten).
 4. `npm run validate` prüft semantische Korrektheit.
 5. Visuell prüfen, präzisieren oder nächste Änderung anweisen.
 6. Sobald ein Zwischenstand sitzt: committen.
@@ -72,7 +72,9 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 - **Pro Workflow eine eigene Datei** in `flows/`. Subprocesses bleiben wo möglich inline; eigenständige End-to-End-Flows kriegen ein eigenes File.
 - **Kleine Commits.** Jeder klar abgrenzbare Zwischenstand bekommt einen eigenen Commit. Erleichtert Reverts und Reviews.
 - **`CLAUDE.md` aktiv pflegen.** Wenn der Assistant wiederholt eine Konvention verletzt, ergänze die Regel dort, nicht im Prompt.
-- **Parallele Edits sind abgesichert** über `files.autoSave: onFocusChange` (`.vscode/settings.json`): sobald du vom Editor ins Terminal wechselst, persistiert VS Code den Buffer. Claude liest dann den aktuellen Stand. Behalte Auto-Save aktiviert; sonst läufst du in Race Conditions zwischen visuellem Modeler-Edit und Assistant-Edit.
+- **Parallele Edits — die zwei Schutzmechanismen**:
+  1. `files.autoSave: onFocusChange` (`.vscode/settings.json`): sobald du vom BPMN-Editor ins Terminal wechselst, persistiert VS Code deinen Buffer auf Disk. Claude liest dann den aktuellen Stand statt einer Stale-Version.
+  2. **Beim Wechsel zurück in den BPMN-Tab nach einem Claude-Edit zeigt der Editor den Dialog „Diagram changed externally, do you want to reload it?" → immer „Reload" klicken.** Wenn du das ignorierst und der Buffer noch deinen alten Stand zeigt, überschreibt der nächste Save Claudes Änderungen ohne Warnung. Der Editor lädt nicht automatisch (Custom-Editor-Verhalten von `bpmn-io.vs-code-bpmn-io`).
 - **`.bpmn` ist Text.** Diffs im PR-Review wie jeden anderen Code lesen. Layout-Diffs sind durch `bpmn-auto-layout` deterministisch und meist klein.
 
 ## Troubleshooting
@@ -81,5 +83,6 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 |------------------------------------------|----------------------------------------------------------------------------------------------|
 | VS Code zeigt rohes XML statt Diagramm   | Extension `bpmn-io.vs-code-bpmn-io` nicht installiert. VS Code schlägt sie via Workspace-Recommendations vor. |
 | `npm run validate` schlägt fehl          | Lint-Regel verletzt (z. B. Gateway ohne Default-Flow). Fehlermeldung benennt das Element.    |
-| Diagramm sieht im Editor „kaputt" aus    | Wahrscheinlich Layout veraltet — `npm run layout` ausführen, dann VS Code reload.            |
+| Diagramm sieht im Editor „kaputt" aus    | Wahrscheinlich Layout veraltet — `npm run layout` ausführen, dann in den BPMN-Tab wechseln und im Dialog „Reload" klicken. |
+| Claudes Änderung kommt im Editor nicht an | Der bpmn-io-Editor reloaded nicht automatisch. In den BPMN-Tab wechseln → Dialog „Diagram changed externally" akzeptieren. Wenn der Dialog nicht erscheint: Buffer ist möglicherweise dirty mit altem Stand → Cmd+Shift+P → „Revert File". |
 | Layout sieht nach `npm run layout` schlechter aus als vorher | `bpmn-auto-layout` legt Knoten in der Reihenfolge ab, in der sie im XML stehen. Reihenfolge der Elemente in `<bpmn:process>` umsortieren. |
