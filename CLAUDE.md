@@ -2,10 +2,10 @@
 
 ## Projektkontext
 
-Iteratives BPMN-Editing per Voice-/Text-Input. Visualisierung läuft in VS Code via Extension `bpmn-io.vs-code-bpmn-io`. Auto-Layout via `npm run layout`, Validierung via `npm run validate`.
+Iteratives BPMN-Editing per Voice-/Text-Input. Live-Preview erfolgt primär im **Browser-Viewer** (`index.html` mit Polling alle ~1,5 s). Auto-Layout via `npm run layout`, Validierung via `npm run validate`.
 
 - **`flows/*.bpmn`** — eine Datei pro Workflow. Du editierst die Semantik dort.
-- **Kein Browser-Viewer**, kein Polling. Render passiert im Editor.
+- Der Browser-Viewer ist editor-agnostisch und reloaded zuverlässig — keine Race Conditions wie bei der VS-Code-Extension.
 - Tooling-Dependencies in `package.json` (`bpmn-auto-layout`, `bpmnlint`).
 
 ## Edit-Regel (zentral)
@@ -43,26 +43,24 @@ Lesbare Namen statt Nummern: `Approve_Task` statt `Task_2`, `Decision_Gateway` s
 
 - **Keine Koordinaten manuell setzen.** DI ist generiert; manuelle Edits werden beim nächsten `npm run layout` überschrieben.
 - **Keine zusätzlichen Build-Tools** (Vite, Webpack, Bundler) einführen — Tooling beschränkt sich auf `bpmn-auto-layout` + `bpmnlint`.
-- **Keine zusätzlichen Top-Level-Verzeichnisse** anlegen, außer der User fragt danach. Diagramme gehören nach `flows/`, Skripte nach `scripts/`.
+- **Keine zusätzlichen Top-Level-Verzeichnisse** anlegen, außer der User fragt danach. Diagramme gehören nach `flows/`, Skripte nach `scripts/`, der Viewer nach `index.html`.
 
 ## Commit-Workflow
 
-Der User editiert `flows/*.bpmn` parallel im VS-Code-BPMN-Modeler. Der Workspace hat `files.autoSave: onFocusChange` aktiviert (`.vscode/settings.json`) — sobald der User den Editor-Fokus verlässt (z.B. ins Terminal wechselt), persistiert VS Code den Buffer auf Disk. Damit ist der Disk-Stand fast immer aktuell, wenn du dran arbeitest.
-
-Wichtig zum Editor-Verhalten: Der bpmn-io-Editor lädt externe Änderungen beim nächsten Tab-Aktivieren automatisch nach **wenn der Buffer clean ist** (Standard-Fall). Bei dirty Buffer (User hat visuell editiert, ohne Fokus zu wechseln) kommt stattdessen ein „Diagram changed externally"-Dialog; ignoriert der User ihn und editiert weiter, überschreibt der nächste Save deine Änderungen kommentarlos. Wenn du nach einem Edit den Verdacht hast, dass parallel visuell editiert wurde, weise den User aktiv darauf hin, beim Dialog „Reload" zu klicken.
-
-Trotzdem:
+Der User editiert `flows/*.bpmn` ggf. parallel über die optionale VS-Code-Extension. Damit Edits nicht kollidieren:
 
 1. **Vor jeder Änderung** `git status` prüfen.
    - Clean → loslegen.
    - Dirty → `git diff HEAD -- flows/` prüfen:
      - **Normalfall** (Additionen, kleine Korrekturen, Auto-Layout-Drift): still als `chore: editor edits` committen und weiterarbeiten. **Nicht nachfragen.**
-     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt). Wahrscheinlich war Auto-Save aus oder der Buffer ungespeichert. → **Stop, beim User nachfragen.**
+     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt). Wahrscheinlich hat die VS-Code-Extension einen Stale-WebView-State auf Disk geschrieben (bekannter Bug — siehe README „Parallele Edits"). → **Stop, beim User nachfragen.**
 2. **Nach jeder Änderung** sofort committen mit aussagekräftiger Message. Hält den Working Tree zwischen Anweisungen clean.
+
+Wenn du den Verdacht hast, dass der User die VS-Code-Extension benutzt: Erinnere ihn aktiv daran, **nach deinem Edit „Developer: Reload Window" auszuführen**, bevor er visuell editiert. Sonst riskiert er silent data loss.
 
 ## Verifikation nach jedem Edit
 
 1. `npm run validate` ist grün
 2. Jeder Sequence Flow als `<bpmn:sequenceFlow>` plus `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel
 3. IDs eindeutig und sprechend
-4. Bei Unsicherheit: User bitten, das Diagramm in VS Code zu prüfen
+4. Bei Unsicherheit: User bitten, das Diagramm im Browser-Viewer zu prüfen

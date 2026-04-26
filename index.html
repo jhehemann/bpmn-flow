@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>BPMN Flow Viewer</title>
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css">
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-js.css">
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn.css">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: sans-serif; background: #fafafa; }
+    #canvas { width: 100vw; height: 100vh; }
+    #status {
+      position: fixed; top: 10px; left: 10px; z-index: 10;
+      padding: 6px 10px; background: rgba(255,255,255,0.92);
+      border: 1px solid #ddd; border-radius: 4px;
+      font-size: 12px; color: #333;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    #status.error { color: #b00020; border-color: #f5c2c7; }
+    #controls {
+      position: fixed; top: 10px; right: 10px; z-index: 10;
+      display: flex; gap: 6px; align-items: center;
+    }
+    #controls select, #controls button, #controls label {
+      padding: 6px 10px; font-size: 12px; cursor: pointer;
+      background: #fff; border: 1px solid #ccc; border-radius: 4px;
+    }
+    #controls label { display: flex; align-items: center; gap: 4px; cursor: default; }
+    #controls button:hover, #controls select:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div id="canvas"></div>
+  <div id="status">Lade…</div>
+  <div id="controls">
+    <select id="fileSelect" title="Diagramm auswählen"></select>
+    <label><input type="checkbox" id="autoReload" checked> Auto-Reload</label>
+    <button id="reloadBtn" title="Manuell neu laden">Neu laden</button>
+    <button id="fitBtn" title="Diagramm einpassen">Einpassen</button>
+  </div>
+
+  <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-navigated-viewer.production.min.js"></script>
+  <script>
+    const viewer = new BpmnJS({ container: '#canvas' });
+    const statusEl = document.getElementById('status');
+    const autoReloadEl = document.getElementById('autoReload');
+    const fileSelectEl = document.getElementById('fileSelect');
+
+    let currentFile = null;
+    let lastXml = null;
+
+    async function listFlows() {
+      const res = await fetch('flows/?_=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('flows/ HTTP ' + res.status);
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return Array.from(doc.querySelectorAll('a'))
+        .map(a => decodeURIComponent(a.getAttribute('href') || ''))
+        .filter(h => h.endsWith('.bpmn'))
+        .map(h => h.replace(/^.*\//, ''))
+        .sort();
+    }
+
+    async function refreshFileList() {
+      try {
+        const files = await listFlows();
+        const previous = fileSelectEl.value;
+        fileSelectEl.innerHTML = '';
+        for (const f of files) {
+          const opt = document.createElement('option');
+          opt.value = f;
+          opt.textContent = f;
+          fileSelectEl.appendChild(opt);
+        }
+        if (files.includes(previous)) {
+          fileSelectEl.value = previous;
+        } else if (files.length > 0) {
+          fileSelectEl.value = files[0];
+        }
+        return fileSelectEl.value;
+      } catch (e) {
+        statusEl.classList.add('error');
+        statusEl.textContent = 'Fehler beim Listen: ' + e.message;
+        return null;
+      }
+    }
+
+    async function load(force = false) {
+      const file = fileSelectEl.value;
+      if (!file) return false;
+      try {
+        const res = await fetch('flows/' + file + '?_=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const xml = await res.text();
+        const fileChanged = file !== currentFile;
+        if (!force && !fileChanged && xml === lastXml) return false;
+        lastXml = xml;
+        currentFile = file;
+        await viewer.importXML(xml);
+        viewer.get('canvas').zoom('fit-viewport');
+        statusEl.classList.remove('error');
+        statusEl.textContent = file + ' — geladen ' + new Date().toLocaleTimeString();
+        return true;
+      } catch (e) {
+        statusEl.classList.add('error');
+        statusEl.textContent = 'Fehler: ' + e.message;
+        console.error(e);
+        return false;
+      }
+    }
+
+    fileSelectEl.addEventListener('change', () => load(true));
+    document.getElementById('reloadBtn').onclick = async () => {
+      await refreshFileList();
+      await load(true);
+    };
+    document.getElementById('fitBtn').onclick = () => viewer.get('canvas').zoom('fit-viewport');
+
+    (async () => {
+      await refreshFileList();
+      await load(true);
+    })();
+
+    setInterval(async () => {
+      if (!autoReloadEl.checked) return;
+      await load(false);
+    }, 1500);
+  </script>
+</body>
+</html>
