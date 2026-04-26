@@ -12,7 +12,7 @@ Leichtgewichtiges Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-As
 
 - Python 3 (für den HTTP-Server) oder ein beliebiger anderer statischer Webserver
 - Ein moderner Browser
-- Ein AI-Coding-Assistant — getestet mit [Claude Code](https://docs.claude.com/en/docs/claude-code) und [Codex CLI](https://github.com/openai/codex)
+- Ein AI-Coding-Assistant — entwickelt mit [Claude Code](https://docs.claude.com/en/docs/claude-code); andere Harnesses wie [Codex CLI](https://github.com/openai/codex) sollten analog funktionieren (siehe „Andere Assistants als Claude Code")
 
 ## Quickstart
 
@@ -62,14 +62,6 @@ Bewusst auf ein Diagramm pro Repo ausgelegt. Für mehrere Workflows: pro Workflo
 - **Aider** → `CONVENTIONS.md` (mit `aider --read CONVENTIONS.md` einbinden)
 
 Empfehlung: per Symlink referenzieren statt kopieren, damit es eine einzige Quelle bleibt (`ln -s CLAUDE.md AGENTS.md`).
-
-## Beispiel-Prompts
-
-- „Füge nach ‚Aufgabe erledigen‘ ein exklusives Gateway mit zwei Pfaden ein — einer direkt zum End-Event, einer zu einer neuen User Task ‚Manuelle Freigabe‘, die danach auch zum End-Event geht."
-- „Benenne ‚Aufgabe erledigen‘ in ‚Antrag prüfen‘ um und mach eine User Task daraus."
-- „Füge zwischen Start und der ersten Aufgabe eine Service Task ‚Daten laden‘ ein."
-- „Pack die zentrale Aufgabe in einen Subprocess ‚Bearbeitung‘."
-- „Drehe den Flow um: End-Event links, Start-Event rechts." (Layout-Refactor)
 
 ## Best Practices für das Team
 
