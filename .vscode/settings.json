@@ -1,3 +1,6 @@
 {
+  "workbench.editorAssociations": {
+    "*.bpmn": "default"
+  },
   "files.autoSave": "onFocusChange"
 }

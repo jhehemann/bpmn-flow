@@ -5,7 +5,7 @@
 Iteratives BPMN-Editing per Voice-/Text-Input. Live-Preview erfolgt primär im **Browser-Viewer** (`index.html` mit Polling alle ~1,5 s). Auto-Layout via `npm run layout`, Validierung via `npm run validate`.
 
 - **`flows/*.bpmn`** — eine Datei pro Workflow. Du editierst die Semantik dort.
-- Der Browser-Viewer ist editor-agnostisch und reloaded zuverlässig — keine Race Conditions wie bei der VS-Code-Extension.
+- VS Code öffnet `.bpmn` per Default als Text. Der User kann optional via „Open With → BPMN Editor" visuell editieren.
 - Tooling-Dependencies in `package.json` (`bpmn-auto-layout`, `bpmnlint`).
 
 ## Edit-Regel (zentral)
@@ -47,16 +47,14 @@ Lesbare Namen statt Nummern: `Approve_Task` statt `Task_2`, `Decision_Gateway` s
 
 ## Commit-Workflow
 
-Der User editiert `flows/*.bpmn` ggf. parallel über die optionale VS-Code-Extension. Damit Edits nicht kollidieren:
+Der User editiert `flows/*.bpmn` ggf. als Text oder visuell (via „Open With → BPMN Editor"). Konvention: visuelles Editieren und Assistant-Edits sind sequenziell, nicht parallel — der User schließt den BPMN-Editor-Tab, bevor er dich beauftragt.
 
 1. **Vor jeder Änderung** `git status` prüfen.
    - Clean → loslegen.
    - Dirty → `git diff HEAD -- flows/` prüfen:
      - **Normalfall** (Additionen, kleine Korrekturen, Auto-Layout-Drift): still als `chore: editor edits` committen und weiterarbeiten. **Nicht nachfragen.**
-     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt). Wahrscheinlich hat die VS-Code-Extension einen Stale-WebView-State auf Disk geschrieben (bekannter Bug — siehe README „Parallele Edits"). → **Stop, beim User nachfragen.**
+     - **Ausnahme**: Der Diff macht klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig. Wahrscheinlich hat ein offener BPMN-Editor-Tab seinen Stale-WebView-State auf Disk geschrieben. → **Stop, beim User nachfragen** und ihn bitten, den Tab zu schließen.
 2. **Nach jeder Änderung** sofort committen mit aussagekräftiger Message. Hält den Working Tree zwischen Anweisungen clean.
-
-Wenn du den Verdacht hast, dass der User die VS-Code-Extension benutzt: Erinnere ihn aktiv daran, **nach deinem Edit „Developer: Reload Window" auszuführen**, bevor er visuell editiert. Sonst riskiert er silent data loss.
 
 ## Verifikation nach jedem Edit
 

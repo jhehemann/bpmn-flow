@@ -6,7 +6,7 @@ Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-Assistant (Claude Co
 
 - **Semantik vs. Layout getrennt**: Der Assistant editiert ausschließlich die semantischen Teile der BPMN-Datei. Das Layout (Koordinaten, Waypoints, Bounds) wird per `npm run layout` automatisch generiert. So muss der Assistant keine Koordinaten ausrechnen, und PR-Diffs zeigen primär semantische Änderungen.
 - **Browser-Viewer als Live-Preview**: `index.html` rendert das aktuell ausgewählte Diagramm und pollt alle ~1,5 s auf Änderungen. Funktioniert editor-agnostisch und reloaded zuverlässig.
-- **VS Code Extension als optionales Zusatz-Tool** für visuelles Modellieren — mit Vorsicht zu nutzen (siehe „Parallele Edits" unten).
+- **VS Code Extension als optionales Zusatz-Tool** für visuelles Modellieren via „Open With" (siehe unten).
 - **Validierung**: `bpmnlint` prüft Konventionen (Default-Flow, IDs, Verbindungen) vor dem Commit oder im CI.
 
 ## Voraussetzungen
@@ -86,18 +86,21 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 - **`CLAUDE.md` aktiv pflegen.** Wenn der Assistant wiederholt eine Konvention verletzt, ergänze die Regel dort, nicht im Prompt.
 - **`.bpmn` ist Text.** Diffs im PR-Review wie jeden anderen Code lesen. Layout-Diffs sind durch `bpmn-auto-layout` deterministisch und meist klein.
 
-## Parallele Edits — VS Code BPMN Extension mit Vorsicht
+## Visuelles Editieren (optional)
 
-Die optionale VS-Code-Extension `bpmn-io.vs-code-bpmn-io` ist ein vollwertiger Modeler — du kannst Elemente per Drag-and-Drop verschieben, Labels per Doppelklick ändern. **Aber: ihr WebView-Reload ist unzuverlässig**, was zu *silent data loss* führen kann, wenn Assistant und User parallel arbeiten:
+`.bpmn`-Dateien öffnen sich in VS Code per Default als Text (XML) — siehe `.vscode/settings.json`. Für visuelles Editieren mit Drag-and-Drop:
 
-1. Assistant editiert `flows/foo.bpmn` (Disk wird neu).
-2. Editor-WebView reloaded NICHT zuverlässig — auch nicht beim Tab-Wechsel oder via „Revert File". Nur „Developer: Reload Window" funktioniert.
-3. Du editierst visuell etwas im Editor (während WebView noch alten Stand zeigt).
-4. Auto-Save persistiert den **gesamten alten WebView-State** auf Disk → die Edits des Assistants werden kommentarlos überschrieben.
+**Rechtsklick auf die Datei → „Open With…" → „BPMN Editor"** (Extension `bpmn-io.vs-code-bpmn-io`).
 
-→ Die einzige sichere Regel: **Wenn du die Extension neben dem Assistant nutzt, nach jedem Assistant-Edit „Cmd+Shift+P → Developer: Reload Window" ausführen**, bevor du visuell editierst.
+### Wichtig: nicht parallel zum Assistant arbeiten
 
-→ Pragmatischer: **Browser-Viewer für die iterative AI-driven Arbeit nutzen** (immer aktuell durch Polling). Die VS-Code-Extension nur für dedizierte Modellierungs-Sessions öffnen, in denen der Assistant nicht gleichzeitig arbeitet.
+Der visuelle Editor reloaded externe Datei-Änderungen nicht zuverlässig. Sein WebView merkt sich den Stand vom Öffnen, und beim nächsten Save (z.B. via `autoSave: onFocusChange`) schreibt er diesen Stand auf Disk — und überschreibt damit unsichtbar Änderungen, die der Assistant zwischendurch gemacht hat.
+
+Daraus folgt eine einfache Regel:
+
+1. **Visuell editieren wollen → Assistant pausieren**, dann Datei via „Open With" öffnen.
+2. **Editor-Tab nach Gebrauch wieder schließen**, bevor der Assistant weiterarbeitet. Sonst lauert der Tab im Hintergrund mit altem WebView-State und überschreibt beim nächsten Fokus-Wechsel unbemerkt.
+3. Während der Assistant aktiv editiert: Browser-Viewer (`http://localhost:8000`) für die Live-Preview nutzen — der reloaded race-frei per Polling.
 
 ## Troubleshooting
 
@@ -107,4 +110,4 @@ Die optionale VS-Code-Extension `bpmn-io.vs-code-bpmn-io` ist ein vollwertiger M
 | Diagramm aktualisiert nicht im Browser   | Auto-Reload-Checkbox an? Server läuft? Hard-Reload (`Cmd+Shift+R`).                          |
 | `npm run validate` schlägt fehl          | Lint-Regel verletzt (z. B. unverbundenes Element). Fehlermeldung benennt Element + Regel.   |
 | Edge-Labels überlappen mit Linien        | Bekannte Schwäche von `bpmn-auto-layout`. Workaround: kürzere Labels oder akzeptieren.       |
-| VS-Code-Extension zeigt veralteten Stand | Reload-Bug der Extension — Cmd+Shift+P → „Developer: Reload Window" (siehe „Parallele Edits"). |
+| BPMN-Editor zeigt veralteten Stand       | Tab schließen und via „Open With" neu öffnen, oder Cmd+Shift+P → „Developer: Reload Window".    |
