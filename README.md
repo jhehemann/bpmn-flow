@@ -102,6 +102,11 @@ Daraus folgt eine einfache Regel:
 2. **Editor-Tab nach Gebrauch wieder schließen**, bevor der Assistant weiterarbeitet. Sonst lauert der Tab im Hintergrund mit altem WebView-State und überschreibt beim nächsten Fokus-Wechsel unbemerkt.
 3. Während der Assistant aktiv editiert: Browser-Viewer (`http://localhost:8000`) für die Live-Preview nutzen — der reloaded race-frei per Polling.
 
+## Bekannte Einschränkungen
+
+- **Auto-Layout ist destruktiv.** `npm run layout` regeneriert den `<bpmndi:...>`-Block komplett aus der Semantik. Positions-Tweaks aus dem visuellen Editor sind beim nächsten Assistant-Edit weg. Das ist Absicht (deterministische Diffs); wenn dir bestimmte Positionen wichtig sind, ist `bpmn-auto-layout` das falsche Tool.
+- **Visueller Editor und Assistant nicht parallel** — siehe [Visuelles Editieren (optional)](#visuelles-editieren-optional).
+
 ## Troubleshooting
 
 | Symptom                                  | Ursache und Fix                                                                              |
