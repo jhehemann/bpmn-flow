@@ -12,7 +12,7 @@
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_Audit_Done</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="Decision_Gateway" name="Manuelle Freigabe nötig?">
+    <bpmn:exclusiveGateway id="Decision_Gateway" name="Freigabe erforderlich?">
       <bpmn:incoming>Flow_Audit_Done</bpmn:incoming>
       <bpmn:outgoing>Flow_To_End</bpmn:outgoing>
       <bpmn:outgoing>Flow_To_Approval</bpmn:outgoing>
