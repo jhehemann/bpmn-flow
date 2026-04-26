@@ -37,14 +37,7 @@ The viewer shows `flows/example.bpmn`. Edit the file (or let the AI assistant ed
 instruct → edit semantics → npm run layout → npm run validate → commit
 ```
 
-1. Give the assistant an instruction (voice or text), e.g. "After 'Review request', insert an exclusive gateway with two paths."
-2. The assistant edits the semantics in `flows/<file>.bpmn`.
-3. `npm run layout` regenerates the diagram interchange. The browser viewer renders within ~1.5 s.
-4. `npm run validate` checks semantic correctness.
-5. Inspect visually, refine, or issue the next change.
-6. Once an intermediate state is solid: commit.
-
-Steps 3 and 4 are ideally done by the assistant itself (see `CLAUDE.md`).
+You issue an instruction, the assistant edits `flows/<file>.bpmn`, then runs layout and validate itself (see `CLAUDE.md`). The browser viewer reloads within ~1.5 s; you inspect, refine, and commit when an intermediate state is solid.
 
 ## NPM scripts
 
@@ -78,32 +71,24 @@ Recommendation: symlink instead of copying (`ln -s CLAUDE.md AGENTS.md`).
 
 ## Team best practices
 
-- **Use readable IDs** (`Approve_Task`, not `Task_2`). Makes it easier to reference elements precisely in prompts.
-- **One file per workflow** in `flows/`. Subprocesses stay inline where possible; standalone end-to-end flows get their own file.
 - **Small commits.** Each clearly delimited intermediate state gets its own commit. Easier to revert and review.
 - **Maintain `CLAUDE.md` actively.** If the assistant repeatedly violates a convention, codify the rule there instead of repeating it in prompts.
-- **`.bpmn` is text.** Read diffs in PR review like any other code. Layout diffs are deterministic via `bpmn-auto-layout` and usually small.
 
 ## Visual editing (optional)
 
-`.bpmn` files open as text (XML) in VS Code by default — see `.vscode/settings.json`. For drag-and-drop visual editing:
-
-**Right-click the file → "Open With…" → "BPMN Editor"** (extension `bpmn-io.vs-code-bpmn-io`).
+`.bpmn` files open as text in VS Code by default. For drag-and-drop editing, **right-click → "Open With…" → "BPMN Editor"** (extension `bpmn-io.vs-code-bpmn-io`).
 
 ### Important: don't work in parallel with the assistant
 
-The visual editor doesn't reliably reload external file changes. Its WebView caches the state from when it was opened, and on the next save (manual `Cmd+S` or with `files.autoSave` enabled) it writes that state to disk — silently overwriting any changes the assistant made in between.
+The visual editor's WebView caches the file state at open time and overwrites external changes on the next save (manual `Cmd+S` or active `files.autoSave`). Quick manual tweaks are fine, but follow the rules:
 
-The simple rule:
-
-1. **Want to edit visually → pause the assistant**, then open the file via "Open With".
-2. **Close the editor tab after use**, before the assistant resumes. Otherwise the tab lurks in the background with stale WebView state and silently overwrites on the next focus change.
-3. While the assistant is actively editing: use the browser viewer (`http://localhost:8000`) for live preview — it reloads race-free via polling.
+1. **Pause the assistant before opening the editor**, then use "Open With".
+2. **Close the editor tab when done** — an open tab silently overwrites on the next focus change.
+3. While the assistant is editing, use the browser viewer at `http://localhost:8000` — it reloads race-free via polling.
 
 ## Known limitations
 
-- **Auto-layout is destructive.** `npm run layout` regenerates the entire `<bpmndi:...>` block from the semantics. Position tweaks made in the visual editor are gone after the next assistant edit. This is intentional (deterministic diffs); if specific positions matter to you, `bpmn-auto-layout` is the wrong tool.
-- **Visual editor and assistant don't run in parallel** — see [Visual editing (optional)](#visual-editing-optional).
+**Auto-layout is destructive.** `npm run layout` regenerates the entire `<bpmndi:...>` block from the semantics. Position tweaks from the visual editor are lost on the next assistant edit — deterministic diffs trade fine-grained layout control for clean PRs.
 
 ## Troubleshooting
 
