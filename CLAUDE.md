@@ -14,6 +14,7 @@ Iteratives BPMN-Editing per Voice-/Text-Input. Live-Preview erfolgt primär im *
 
 Bei jedem Edit:
 - Knoten als `<bpmn:...>` in `<bpmn:process>` anlegen, mit lesbarer ID (`Approve_Task` statt `Task_2`).
+- **Jeder Knoten braucht ein `name`-Attribut** — auch Start- und End-Events (z. B. `name="Start"`, `name="Done"`). `bpmnlint` schlägt sonst mit `label-required` fehl.
 - Sequence Flow als `<bpmn:sequenceFlow>` plus passende `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel.
 - Danach: `npm run layout` (regeneriert DI), dann `npm run validate` (lintet).
 

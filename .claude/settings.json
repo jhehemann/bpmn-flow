@@ -5,7 +5,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(open http://localhost:*)",
-      "Bash(python3 -m http.server 8765)"
+      "Bash(python3 -m http.server 8765)",
+      "Bash(npm run layout)",
+      "Bash(npm run validate)"
     ],
     "deny": [
       "Read(./.env)",
