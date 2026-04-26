@@ -1,0 +1,14 @@
+{
+  "name": "bpmn-flow",
+  "private": true,
+  "type": "module",
+  "description": "Iteratives BPMN-Editing mit AI-Coding-Assistant; Visualisierung via VS-Code-Extension",
+  "scripts": {
+    "layout": "node scripts/layout.mjs",
+    "validate": "bpmnlint flows/*.bpmn"
+  },
+  "devDependencies": {
+    "bpmn-auto-layout": "^1.3.0",
+    "bpmnlint": "^11.6.0"
+  }
+}

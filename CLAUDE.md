@@ -2,38 +2,38 @@
 
 ## Projektkontext
 
-Iteratives BPMN-Editing per Voice-/Text-Input. Ein Browser-Viewer rendert `flow.bpmn` automatisch alle ~1,5 s neu.
+Iteratives BPMN-Editing per Voice-/Text-Input. Visualisierung läuft in VS Code via Extension `bpmn-io.vs-code-bpmn-io`. Auto-Layout via `npm run layout`, Validierung via `npm run validate`.
 
-- **`flow.bpmn`** — Single Source of Truth. Hier liegen alle Edits.
-- **`index.html`** — Viewer mit `bpmn-js` aus dem CDN. **NICHT anfassen**, außer der User bittet explizit darum.
-- Kein Build, keine `package.json`, kein npm. Setup ist bewusst dependency-frei.
+- **`flows/*.bpmn`** — eine Datei pro Workflow. Du editierst die Semantik dort.
+- **Kein Browser-Viewer**, kein Polling. Render passiert im Editor.
+- Tooling-Dependencies in `package.json` (`bpmn-auto-layout`, `bpmnlint`).
 
-## BPMN 2.0 — die zwei Hälften
+## Edit-Regel (zentral)
 
-Jedes BPMN-Element existiert **zweimal** in der Datei und beide Teile müssen synchron bleiben, sonst rendert der Viewer falsch oder gar nicht:
+**Editiere nur die Semantik unter `<bpmn:process>`. Lass DI-Blöcke (`<bpmndi:...>`) so wie sie sind oder lösche sie.** Layout wird per `npm run layout` deterministisch (re-)generiert. Du musst keine Koordinaten ausrechnen.
 
-1. **Semantik** unter `<bpmn:process>` — was das Element ist und wie es verbunden ist
-2. **Diagramm-Interchange (DI)** unter `<bpmndi:BPMNDiagram>` → `<bpmndi:BPMNPlane>` — wo das Element auf der Zeichenfläche liegt
+Bei jedem Edit:
+- Knoten als `<bpmn:...>` in `<bpmn:process>` anlegen, mit lesbarer ID (`Approve_Task` statt `Task_2`).
+- Sequence Flow als `<bpmn:sequenceFlow>` plus passende `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel.
+- Danach: `npm run layout` (regeneriert DI), dann `npm run validate` (lintet).
 
-Die IDs müssen zwischen Semantik und DI **exakt** übereinstimmen (DI verweist via `bpmnElement="..."`).
+Die bestehende Datei in `flows/` ist die beste Referenz für die Struktur.
 
-Bei jedem neuen Element/Flow alle Stellen updaten:
-- **Knoten**: `<bpmn:...>` in `<bpmn:process>` **und** `<bpmndi:BPMNShape>` mit `<dc:Bounds>` in DI
-- **Sequence Flow**: `<bpmn:sequenceFlow>` in Process **und** `<bpmndi:BPMNEdge>` mit `<di:waypoint>` in DI **und** `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel ergänzen
+## Workflow nach jedem Edit
 
-Die bestehende `flow.bpmn` ist die beste Referenz für die exakte Struktur.
+```
+edit → npm run layout → npm run validate → committen
+```
 
-## Layout-Konventionen
+1. `npm run layout` — schreibt aktuelle Layouts in `flows/*.bpmn`. Optional gezielt: `npm run layout -- flows/foo.bpmn`.
+2. `npm run validate` — `bpmnlint`. Fehler beheben, bevor du committest.
+3. Commit mit aussagekräftiger Message.
 
-Horizontaler Flow, links nach rechts, Mittelachse `y=120`:
+## Multi-File
 
-| Element-Typ      | Größe   | Resultierendes `y` (oben) |
-|------------------|---------|---------------------------|
-| Event (start/end) | 36×36  | `y=102`                   |
-| Task / userTask / serviceTask | 100×80 | `y=80`        |
-| Gateway (alle)   | 50×50   | `y=95`                    |
-
-Spacing: ~160 px zwischen Element-Mittelpunkten. Edge-Waypoints liegen auf `y=120`.
+- Pro eigenständigem End-to-End-Workflow eine eigene Datei in `flows/`.
+- Subprocesses bleiben standardmäßig inline (`<bpmn:subProcess>`) — separate Datei nur, wenn ein Subprocess wiederverwendbar wird.
+- Datei-Naming: `kebab-case.bpmn`, sprechend (`order-approval.bpmn`, nicht `flow1.bpmn`).
 
 ## ID-Konvention
 
@@ -41,24 +41,24 @@ Lesbare Namen statt Nummern: `Approve_Task` statt `Task_2`, `Decision_Gateway` s
 
 ## Was NICHT tun
 
-- **Keine Build-Tools** (npm, package.json, Vite, Webpack) einführen — bricht das dependency-freie Setup
-- **`index.html` nicht anfassen**, außer der User bittet explizit darum
-- Keine zusätzlichen Dateien anlegen (z. B. zweites BPMN-File), außer der User fragt danach
+- **Keine Koordinaten manuell setzen.** DI ist generiert; manuelle Edits werden beim nächsten `npm run layout` überschrieben.
+- **Keine zusätzlichen Build-Tools** (Vite, Webpack, Bundler) einführen — Tooling beschränkt sich auf `bpmn-auto-layout` + `bpmnlint`.
+- **Keine zusätzlichen Top-Level-Verzeichnisse** anlegen, außer der User fragt danach. Diagramme gehören nach `flows/`, Skripte nach `scripts/`.
 
 ## Commit-Workflow
 
-Der User editiert `flow.bpmn` parallel über das BPMN-Plugin in VS Code. Damit Edits nicht kollidieren:
+Der User editiert `flows/*.bpmn` parallel über die VS-Code-Extension. Damit Edits nicht kollidieren:
 
 1. **Vor jeder Änderung** `git status` prüfen.
    - Clean → loslegen.
-   - Dirty → `git diff HEAD -- flow.bpmn` prüfen:
-     - **Normalfall** (Additionen, Layout-Tweaks, kleine Korrekturen): still als `chore: VSCode plugin edits` committen und weiterarbeiten. **Nicht nachfragen.**
-     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt, größerer Bereich auf alten Stand zurück). Wahrscheinlich war der Editor stale. → **Stop, beim User nachfragen.**
+   - Dirty → `git diff HEAD -- flows/` prüfen:
+     - **Normalfall** (Additionen, kleine Korrekturen, Auto-Layout-Drift): still als `chore: editor edits` committen und weiterarbeiten. **Nicht nachfragen.**
+     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt). Wahrscheinlich war der Editor stale. → **Stop, beim User nachfragen.**
 2. **Nach jeder Änderung** sofort committen mit aussagekräftiger Message. Hält den Working Tree zwischen Anweisungen clean.
 
 ## Verifikation nach jedem Edit
 
-1. XML valide — alle Tags geschlossen, IDs eindeutig
-2. Jedes neue/verschobene Element existiert in **beiden** Hälften (Semantik + DI) mit identischer ID
-3. Jeder Sequence Flow als `<bpmn:sequenceFlow>` **und** `<bpmndi:BPMNEdge>`, plus passende `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel
-4. Bei Unsicherheit: Status oben links im Viewer — `Geladen — HH:MM:SS` heißt OK, `Fehler: ...` zeigt Parse-Probleme
+1. `npm run validate` ist grün
+2. Jeder Sequence Flow als `<bpmn:sequenceFlow>` plus `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel
+3. IDs eindeutig und sprechend
+4. Bei Unsicherheit: User bitten, das Diagramm in VS Code zu prüfen

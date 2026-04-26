@@ -1,84 +1,84 @@
 # bpmn-flow
 
-Leichtgewichtiges Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-Assistant (Claude Code, Codex CLI, …) zu erstellen und zu pflegen. Du gibst per Voice oder Text Anweisungen, der Assistant editiert `flow.bpmn`, und ein lokaler Browser-Viewer rendert das Ergebnis innerhalb von ~1,5 s neu.
+Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-Assistant (Claude Code, Codex CLI, …) zu erstellen und zu pflegen. Du gibst per Voice oder Text Anweisungen, der Assistant editiert die Semantik in `flows/*.bpmn`, ein Layout-Skript ergänzt das Diagramm-Interchange, und VS Code rendert das Ergebnis live im Editor.
 
 ## Konzept
 
-- **Eine Datei, eine Wahrheit**: `flow.bpmn` ist die Single Source of Truth. Alle Edits passieren dort.
-- **Live-Preview ohne Build**: Der Viewer (`index.html`) pollt die Datei und rendert sie mit `bpmn-js` aus dem CDN. Keine `package.json`, kein Bundler, keine Node-Dependencies.
-- **Assistant-driven Editing**: Statt im BPMN-Editor zu klicken, beschreibst du die gewünschte Änderung in natürlicher Sprache. Der Assistant hält Semantik und Diagramm-Interchange synchron — die Edit-Regeln dafür stehen in `CLAUDE.md`.
+- **Semantik vs. Layout getrennt**: Der Assistant editiert ausschließlich die semantischen Teile der BPMN-Datei. Das Layout (Koordinaten, Waypoints, Bounds) wird per `npm run layout` automatisch generiert. So muss der Assistant keine Koordinaten ausrechnen, und PR-Diffs zeigen primär semantische Änderungen.
+- **Visualisierung im Editor**: VS Code mit der bpmn.io-Extension rendert `.bpmn`-Dateien direkt — kein Browser, kein Polling, kein zweites Fenster.
+- **Validierung**: `bpmnlint` prüft Konventionen (Default-Flow, IDs, Verbindungen) vor dem Commit oder im CI.
 
 ## Voraussetzungen
 
-- Python 3 (für den HTTP-Server) oder ein beliebiger anderer statischer Webserver
-- Ein moderner Browser
-- Ein AI-Coding-Assistant — entwickelt mit [Claude Code](https://docs.claude.com/en/docs/claude-code); andere Harnesses wie [Codex CLI](https://github.com/openai/codex) sollten analog funktionieren (siehe „Andere Assistants als Claude Code")
+- Node.js ≥ 18 (für Tooling — Layout, Lint)
+- VS Code oder Cursor mit der Extension [`bpmn-io.vs-code-bpmn-io`](https://marketplace.visualstudio.com/items?itemName=bpmn-io.vs-code-bpmn-io). Beim ersten Öffnen des Repos schlägt VS Code die Installation automatisch vor (siehe `.vscode/extensions.json`).
+- Ein AI-Coding-Assistant — entwickelt mit [Claude Code](https://docs.claude.com/en/docs/claude-code); andere Harnesses wie [Codex CLI](https://github.com/openai/codex) sollten analog funktionieren.
 
-## Quickstart
+## Setup
 
-1. Lokalen HTTP-Server im Repo-Verzeichnis starten (`fetch()` aus `file://` ist im Browser blockiert):
-   ```
-   python3 -m http.server 8000
-   ```
-2. Browser öffnen: `http://localhost:8000`
-3. Im selben Verzeichnis den Assistant starten:
-   ```
-   claude          # Claude Code
-   codex           # OpenAI Codex CLI
-   ```
+```
+npm install
+```
 
-Status oben links im Viewer: `Geladen — HH:MM:SS` bei Erfolg, sonst die Parser-Fehlermeldung.
+Danach: eine `.bpmn`-Datei in `flows/` öffnen — VS Code zeigt den BPMN-Editor.
 
 ## Iterativer Workflow
 
 ```
-anweisen → editieren → rendern → prüfen → committen
+anweisen → Semantik editieren → npm run layout → npm run validate → committen
 ```
 
-1. Anweisung geben (Voice oder Text) — z. B. „Füge nach ‚Antrag prüfen‘ ein exklusives Gateway mit zwei Pfaden ein."
-2. Assistant editiert `flow.bpmn`.
-3. Viewer pollt und rendert (~1,5 s).
-4. Visuell prüfen, präzisieren oder nächste Änderung anweisen.
-5. Sobald ein Zwischenstand sitzt: committen — kleine Schritte machen Reverts und Reviews einfach.
+1. Anweisung an den Assistant geben (Voice oder Text), z. B. „Füge nach ‚Antrag prüfen' ein exklusives Gateway mit zwei Pfaden ein."
+2. Assistant editiert die Semantik in `flows/<datei>.bpmn`.
+3. `npm run layout` ergänzt/aktualisiert das Diagramm-Interchange. VS Code re-rendert sofort.
+4. `npm run validate` prüft semantische Korrektheit.
+5. Visuell prüfen, präzisieren oder nächste Änderung anweisen.
+6. Sobald ein Zwischenstand sitzt: committen.
 
-Setup-Tipp: Browser links, Assistant-Terminal rechts. Auto-Reload-Checkbox aktiv.
+Schritte 3 und 4 erledigt der Assistant idealerweise selbst (siehe `CLAUDE.md`).
+
+## NPM-Scripts
+
+| Script              | Zweck                                                                |
+|---------------------|----------------------------------------------------------------------|
+| `npm run layout`    | Auto-Layout für alle `flows/*.bpmn`. Optional: `npm run layout -- flows/foo.bpmn` für gezielten Aufruf. |
+| `npm run validate`  | `bpmnlint` über alle `flows/*.bpmn`. Konfiguration in `.bpmnlintrc`. |
 
 ## Dateistruktur
 
-| Datei        | Zweck                                               |
-|--------------|-----------------------------------------------------|
-| `flow.bpmn`  | Single Source of Truth — BPMN 2.0 XML               |
-| `index.html` | Viewer mit `bpmn-js` (CDN), Auto-Reload via Polling |
-| `CLAUDE.md`  | Edit-Regeln und Konventionen für den AI-Assistant   |
-
-Bewusst auf ein Diagramm pro Repo ausgelegt. Für mehrere Workflows: pro Workflow ein eigenes Repo oder einen eigenen Branch.
+| Pfad                       | Zweck                                                  |
+|----------------------------|--------------------------------------------------------|
+| `flows/*.bpmn`             | BPMN-2.0-Diagramme — eines pro Workflow                |
+| `scripts/layout.mjs`       | Auto-Layout-Wrapper (`bpmn-auto-layout`)               |
+| `.bpmnlintrc`              | Lint-Regeln                                            |
+| `.vscode/extensions.json`  | Extension-Empfehlung für VS Code/Cursor                |
+| `CLAUDE.md`                | Edit-Regeln und Konventionen für den AI-Assistant      |
+| `package.json`             | Tooling-Dependencies (nicht laufzeitrelevant)          |
 
 ## Andere Assistants als Claude Code
 
-`CLAUDE.md` enthält die für jedes BPMN-Edit relevanten Regeln: BPMN-Doppelstruktur (Semantik + DI), Layout-Konventionen, ID-Naming, Verifikation, Commit-Workflow. Diese Regeln sind Assistant-agnostisch — nur der Dateiname ist es nicht. Für andere Tools die Datei spiegeln:
+`CLAUDE.md` enthält die Regeln, die der Assistant beim Editieren befolgen muss. Diese Regeln sind Assistant-agnostisch — nur der Dateiname unterscheidet sich:
 
 - **Codex CLI** → `AGENTS.md`
 - **Cursor** → `.cursor/rules/bpmn.mdc`
 - **Aider** → `CONVENTIONS.md` (mit `aider --read CONVENTIONS.md` einbinden)
 
-Empfehlung: per Symlink referenzieren statt kopieren, damit es eine einzige Quelle bleibt (`ln -s CLAUDE.md AGENTS.md`).
+Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md`).
 
 ## Best Practices für das Team
 
-- **Lesbare IDs vergeben** (`Approve_Task` statt `Task_2`) — du kannst im nächsten Prompt gezielt referenzieren.
-- **Kleine Iterationen committen.** Jeder klar abgrenzbare Zwischenstand bekommt einen eigenen Commit. Erleichtert Reverts und Reviews im PR.
-- **`CLAUDE.md` / `AGENTS.md` aktiv pflegen.** Wenn der Assistant wiederholt eine Konvention verletzt, ergänze die Regel dort — nicht in jedem Prompt neu.
-- **Parallele Edits koordinieren.** Wenn parallel ein BPMN-Editor (z. B. VS Code-Plugin) genutzt wird, vor jeder Assistant-Anweisung den eigenen Stand committen — sonst überschreibt der Assistant unbeabsichtigt.
-- **`.bpmn` ist Text.** Diffs im PR-Review wie jeden anderen Code lesen — nutzt das aktiv für Reviews komplexer Workflow-Änderungen.
+- **Lesbare IDs vergeben** (`Approve_Task` statt `Task_2`). Erleichtert das gezielte Referenzieren in Prompts.
+- **Pro Workflow eine eigene Datei** in `flows/`. Subprocesses bleiben wo möglich inline; eigenständige End-to-End-Flows kriegen ein eigenes File.
+- **Kleine Commits.** Jeder klar abgrenzbare Zwischenstand bekommt einen eigenen Commit. Erleichtert Reverts und Reviews.
+- **`CLAUDE.md` aktiv pflegen.** Wenn der Assistant wiederholt eine Konvention verletzt, ergänze die Regel dort, nicht im Prompt.
+- **Parallele Edits koordinieren.** Wenn parallel im VS-Code-BPMN-Editor visuell editiert wird, vor jeder Assistant-Anweisung committen — sonst überschreibt der Assistant unbeabsichtigt.
+- **`.bpmn` ist Text.** Diffs im PR-Review wie jeden anderen Code lesen. Layout-Diffs sind durch `bpmn-auto-layout` deterministisch und meist klein.
 
 ## Troubleshooting
 
-| Symptom                                | Ursache und Fix                                                                          |
-|----------------------------------------|------------------------------------------------------------------------------------------|
-| Viewer zeigt `Fehler: …`               | Syntax- oder Strukturfehler in `flow.bpmn`. Browser-Konsole für Details öffnen.          |
-| Diagramm aktualisiert nicht            | Auto-Reload-Checkbox an? Server läuft noch? Hard-Reload (`Cmd+Shift+R`).                 |
-| Element nur halb sichtbar oder verschoben | Wahrscheinlich nur die Semantik aktualisiert, der DI-Block fehlt. Assistant nachfassen.  |
-
-## Optional: VS Code-Integration
-
-Im Marketplace nach „bpmn" suchen (z. B. die Extension von `bpmn.io`) — `.bpmn`-Dateien lassen sich dann direkt als Diagramm im Editor öffnen, parallel zum Browser-Viewer. Gut für visuelle Inspektion; Edits darüber vor der nächsten Assistant-Anweisung committen (siehe „Best Practices").
+| Symptom                                  | Ursache und Fix                                                                              |
+|------------------------------------------|----------------------------------------------------------------------------------------------|
+| VS Code zeigt rohes XML statt Diagramm   | Extension `bpmn-io.vs-code-bpmn-io` nicht installiert. VS Code schlägt sie via Workspace-Recommendations vor. |
+| `npm run validate` schlägt fehl          | Lint-Regel verletzt (z. B. Gateway ohne Default-Flow). Fehlermeldung benennt das Element.    |
+| Diagramm sieht im Editor „kaputt" aus    | Wahrscheinlich Layout veraltet — `npm run layout` ausführen, dann VS Code reload.            |
+| Layout sieht nach `npm run layout` schlechter aus als vorher | `bpmn-auto-layout` legt Knoten in der Reihenfolge ab, in der sie im XML stehen. Reihenfolge der Elemente in `<bpmn:process>` umsortieren. |

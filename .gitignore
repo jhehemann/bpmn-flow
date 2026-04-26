@@ -1,3 +1,5 @@
 .DS_Store
-.vscode/
+node_modules/
+.vscode/*
+!.vscode/extensions.json
 .claude/settings.local.json
