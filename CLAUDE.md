@@ -47,13 +47,13 @@ Lesbare Namen statt Nummern: `Approve_Task` statt `Task_2`, `Decision_Gateway` s
 
 ## Commit-Workflow
 
-Der User editiert `flows/*.bpmn` parallel über die VS-Code-Extension. Damit Edits nicht kollidieren:
+Der User editiert `flows/*.bpmn` parallel im VS-Code-BPMN-Modeler. Der Workspace hat `files.autoSave: onFocusChange` aktiviert (`.vscode/settings.json`) — sobald der User den Editor-Fokus verlässt (z.B. ins Terminal wechselt), persistiert VS Code den Buffer auf Disk. Damit ist der Disk-Stand fast immer aktuell, wenn du dran arbeitest. Trotzdem:
 
 1. **Vor jeder Änderung** `git status` prüfen.
    - Clean → loslegen.
    - Dirty → `git diff HEAD -- flows/` prüfen:
      - **Normalfall** (Additionen, kleine Korrekturen, Auto-Layout-Drift): still als `chore: editor edits` committen und weiterarbeiten. **Nicht nachfragen.**
-     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt). Wahrscheinlich war der Editor stale. → **Stop, beim User nachfragen.**
+     - **Ausnahme**: Der Diff macht **klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig** (komplettes neues Element/Flow fehlt). Wahrscheinlich war Auto-Save aus oder der Buffer ungespeichert. → **Stop, beim User nachfragen.**
 2. **Nach jeder Änderung** sofort committen mit aussagekräftiger Message. Hält den Working Tree zwischen Anweisungen clean.
 
 ## Verifikation nach jedem Edit

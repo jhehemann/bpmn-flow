@@ -52,6 +52,7 @@ Schritte 3 und 4 erledigt der Assistant idealerweise selbst (siehe `CLAUDE.md`).
 | `scripts/layout.mjs`       | Auto-Layout-Wrapper (`bpmn-auto-layout`)               |
 | `.bpmnlintrc`              | Lint-Regeln                                            |
 | `.vscode/extensions.json`  | Extension-Empfehlung für VS Code/Cursor                |
+| `.vscode/settings.json`    | Workspace-Settings (Auto-Save für Konflikt-Vermeidung) |
 | `CLAUDE.md`                | Edit-Regeln und Konventionen für den AI-Assistant      |
 | `package.json`             | Tooling-Dependencies (nicht laufzeitrelevant)          |
 
@@ -71,7 +72,7 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 - **Pro Workflow eine eigene Datei** in `flows/`. Subprocesses bleiben wo möglich inline; eigenständige End-to-End-Flows kriegen ein eigenes File.
 - **Kleine Commits.** Jeder klar abgrenzbare Zwischenstand bekommt einen eigenen Commit. Erleichtert Reverts und Reviews.
 - **`CLAUDE.md` aktiv pflegen.** Wenn der Assistant wiederholt eine Konvention verletzt, ergänze die Regel dort, nicht im Prompt.
-- **Parallele Edits koordinieren.** Wenn parallel im VS-Code-BPMN-Editor visuell editiert wird, vor jeder Assistant-Anweisung committen — sonst überschreibt der Assistant unbeabsichtigt.
+- **Parallele Edits sind abgesichert** über `files.autoSave: onFocusChange` (`.vscode/settings.json`): sobald du vom Editor ins Terminal wechselst, persistiert VS Code den Buffer. Claude liest dann den aktuellen Stand. Behalte Auto-Save aktiviert; sonst läufst du in Race Conditions zwischen visuellem Modeler-Edit und Assistant-Edit.
 - **`.bpmn` ist Text.** Diffs im PR-Review wie jeden anderen Code lesen. Layout-Diffs sind durch `bpmn-auto-layout` deterministisch und meist klein.
 
 ## Troubleshooting
