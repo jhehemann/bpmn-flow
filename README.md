@@ -2,8 +2,6 @@
 
 Toolkit for iteratively authoring BPMN 2.0 diagrams with an AI coding assistant (Claude Code, Codex CLI, …). You issue voice or text instructions, the assistant edits the semantics in `flows/*.bpmn`, a layout script regenerates the diagram interchange, and a lightweight browser viewer renders the result live (polling every ~1.5 s).
 
-![Browser viewer rendering example.bpmn](docs/viewer.png)
-
 ## Quick Start
 
 ```bash
