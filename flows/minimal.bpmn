@@ -1,275 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Invoice_Approval" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:process id="Invoice_Approval_Process" isExecutable="false">
-    <bpmn:startEvent id="Invoice_Received" name="Rechnung empfangen">
-      <bpmn:outgoing>Flow_Start_To_Capture</bpmn:outgoing>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Minimal" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Minimal_Process" isExecutable="false">
+    <bpmn:startEvent id="Start_Event" name="Start">
+      <bpmn:outgoing>Flow_Start_To_Task</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:task id="Capture_Invoice" name="Rechnung erfassen">
-      <bpmn:incoming>Flow_Start_To_Capture</bpmn:incoming>
-      <bpmn:outgoing>Flow_Capture_To_DuplicateCheck</bpmn:outgoing>
+    <bpmn:task id="Do_Work" name="Aufgabe erledigen">
+      <bpmn:incoming>Flow_Start_To_Task</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_To_End</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:task id="Duplicate_Check" name="Duplikat">
-      <bpmn:incoming>Flow_Capture_To_DuplicateCheck</bpmn:incoming>
-      <bpmn:outgoing>Flow_DuplicateCheck_To_Gateway</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:exclusiveGateway id="Duplicate_Gateway" name="Duplikat?">
-      <bpmn:incoming>Flow_DuplicateCheck_To_Gateway</bpmn:incoming>
-      <bpmn:outgoing>Flow_Duplicate_To_Discard</bpmn:outgoing>
-      <bpmn:outgoing>Flow_Duplicate_To_ParallelSplit</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:task id="Discard_Duplicate" name="Als Duplikat verwerfen">
-      <bpmn:incoming>Flow_Duplicate_To_Discard</bpmn:incoming>
-      <bpmn:outgoing>Flow_Discard_To_End</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:endEvent id="End_Duplicate" name="Duplikat verworfen">
-      <bpmn:incoming>Flow_Discard_To_End</bpmn:incoming>
+    <bpmn:endEvent id="End_Event" name="Done">
+      <bpmn:incoming>Flow_Task_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:parallelGateway id="Parallel_Split" name="Prüfungen parallel">
-      <bpmn:incoming>Flow_Duplicate_To_ParallelSplit</bpmn:incoming>
-      <bpmn:outgoing>Flow_Split_To_FactualCheck</bpmn:outgoing>
-      <bpmn:outgoing>Flow_Split_To_ArithmeticCheck</bpmn:outgoing>
-    </bpmn:parallelGateway>
-    <bpmn:task id="Factual_Check" name="Sachliche Prüfung">
-      <bpmn:incoming>Flow_Split_To_FactualCheck</bpmn:incoming>
-      <bpmn:outgoing>Flow_FactualCheck_To_Join</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Arithmetic_Check" name="Rechnerische Prüfung">
-      <bpmn:incoming>Flow_Split_To_ArithmeticCheck</bpmn:incoming>
-      <bpmn:outgoing>Flow_ArithmeticCheck_To_Join</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:parallelGateway id="Parallel_Join" name="Prüfungen abgeschlossen">
-      <bpmn:incoming>Flow_FactualCheck_To_Join</bpmn:incoming>
-      <bpmn:incoming>Flow_ArithmeticCheck_To_Join</bpmn:incoming>
-      <bpmn:outgoing>Flow_Join_To_CheckOk</bpmn:outgoing>
-    </bpmn:parallelGateway>
-    <bpmn:exclusiveGateway id="Check_Ok_Gateway" name="Prüfung erfolgreich?">
-      <bpmn:incoming>Flow_Join_To_CheckOk</bpmn:incoming>
-      <bpmn:outgoing>Flow_CheckOk_To_Reject</bpmn:outgoing>
-      <bpmn:outgoing>Flow_CheckOk_To_AmountGateway</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:task id="Reject_Invoice" name="Rechnung an Lieferant zurücksenden">
-      <bpmn:incoming>Flow_CheckOk_To_Reject</bpmn:incoming>
-      <bpmn:outgoing>Flow_Reject_To_End</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:endEvent id="End_Rejected" name="Abgelehnt">
-      <bpmn:incoming>Flow_Reject_To_End</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:exclusiveGateway id="Amount_Gateway" name="Betrag &#62; 10.000 €?">
-      <bpmn:incoming>Flow_CheckOk_To_AmountGateway</bpmn:incoming>
-      <bpmn:outgoing>Flow_Amount_To_Management</bpmn:outgoing>
-      <bpmn:outgoing>Flow_Amount_To_TeamLead</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:task id="Approve_Management" name="Freigabe durch Geschäftsführung">
-      <bpmn:incoming>Flow_Amount_To_Management</bpmn:incoming>
-      <bpmn:outgoing>Flow_Management_To_ApprovalJoin</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Approve_TeamLead" name="Freigabe durch Abteilungsleiter">
-      <bpmn:incoming>Flow_Amount_To_TeamLead</bpmn:incoming>
-      <bpmn:outgoing>Flow_TeamLead_To_ApprovalJoin</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:exclusiveGateway id="Approval_Join" name="Freigabe erteilt">
-      <bpmn:incoming>Flow_Management_To_ApprovalJoin</bpmn:incoming>
-      <bpmn:incoming>Flow_TeamLead_To_ApprovalJoin</bpmn:incoming>
-      <bpmn:outgoing>Flow_ApprovalJoin_To_Payment</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:task id="Trigger_Payment" name="Zahlung veranlassen">
-      <bpmn:incoming>Flow_ApprovalJoin_To_Payment</bpmn:incoming>
-      <bpmn:outgoing>Flow_Payment_To_Booking</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Book_Invoice" name="Rechnung buchen">
-      <bpmn:incoming>Flow_Payment_To_Booking</bpmn:incoming>
-      <bpmn:outgoing>Flow_Booking_To_Archive</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Archive_Invoice" name="Rechnung archivieren">
-      <bpmn:incoming>Flow_Booking_To_Archive</bpmn:incoming>
-      <bpmn:outgoing>Flow_Archive_To_End</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:endEvent id="End_Completed" name="Abgeschlossen">
-      <bpmn:incoming>Flow_Archive_To_End</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_Start_To_Capture" sourceRef="Invoice_Received" targetRef="Capture_Invoice" />
-    <bpmn:sequenceFlow id="Flow_Capture_To_DuplicateCheck" sourceRef="Capture_Invoice" targetRef="Duplicate_Check" />
-    <bpmn:sequenceFlow id="Flow_DuplicateCheck_To_Gateway" sourceRef="Duplicate_Check" targetRef="Duplicate_Gateway" />
-    <bpmn:sequenceFlow id="Flow_Duplicate_To_Discard" name="ja" sourceRef="Duplicate_Gateway" targetRef="Discard_Duplicate" />
-    <bpmn:sequenceFlow id="Flow_Duplicate_To_ParallelSplit" name="nein" sourceRef="Duplicate_Gateway" targetRef="Parallel_Split" />
-    <bpmn:sequenceFlow id="Flow_Discard_To_End" sourceRef="Discard_Duplicate" targetRef="End_Duplicate" />
-    <bpmn:sequenceFlow id="Flow_Split_To_FactualCheck" sourceRef="Parallel_Split" targetRef="Factual_Check" />
-    <bpmn:sequenceFlow id="Flow_Split_To_ArithmeticCheck" sourceRef="Parallel_Split" targetRef="Arithmetic_Check" />
-    <bpmn:sequenceFlow id="Flow_FactualCheck_To_Join" sourceRef="Factual_Check" targetRef="Parallel_Join" />
-    <bpmn:sequenceFlow id="Flow_ArithmeticCheck_To_Join" sourceRef="Arithmetic_Check" targetRef="Parallel_Join" />
-    <bpmn:sequenceFlow id="Flow_Join_To_CheckOk" sourceRef="Parallel_Join" targetRef="Check_Ok_Gateway" />
-    <bpmn:sequenceFlow id="Flow_CheckOk_To_Reject" name="nein" sourceRef="Check_Ok_Gateway" targetRef="Reject_Invoice" />
-    <bpmn:sequenceFlow id="Flow_CheckOk_To_AmountGateway" name="ja" sourceRef="Check_Ok_Gateway" targetRef="Amount_Gateway" />
-    <bpmn:sequenceFlow id="Flow_Reject_To_End" sourceRef="Reject_Invoice" targetRef="End_Rejected" />
-    <bpmn:sequenceFlow id="Flow_Amount_To_Management" name="ja" sourceRef="Amount_Gateway" targetRef="Approve_Management" />
-    <bpmn:sequenceFlow id="Flow_Amount_To_TeamLead" name="nein" sourceRef="Amount_Gateway" targetRef="Approve_TeamLead" />
-    <bpmn:sequenceFlow id="Flow_Management_To_ApprovalJoin" sourceRef="Approve_Management" targetRef="Approval_Join" />
-    <bpmn:sequenceFlow id="Flow_TeamLead_To_ApprovalJoin" sourceRef="Approve_TeamLead" targetRef="Approval_Join" />
-    <bpmn:sequenceFlow id="Flow_ApprovalJoin_To_Payment" sourceRef="Approval_Join" targetRef="Trigger_Payment" />
-    <bpmn:sequenceFlow id="Flow_Payment_To_Booking" sourceRef="Trigger_Payment" targetRef="Book_Invoice" />
-    <bpmn:sequenceFlow id="Flow_Booking_To_Archive" sourceRef="Book_Invoice" targetRef="Archive_Invoice" />
-    <bpmn:sequenceFlow id="Flow_Archive_To_End" sourceRef="Archive_Invoice" targetRef="End_Completed" />
+    <bpmn:sequenceFlow id="Flow_Start_To_Task" sourceRef="Start_Event" targetRef="Do_Work" />
+    <bpmn:sequenceFlow id="Flow_Task_To_End" sourceRef="Do_Work" targetRef="End_Event" />
   </bpmn:process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_Invoice_Approval_Process">
-    <bpmndi:BPMNPlane id="BPMNPlane_Invoice_Approval_Process" bpmnElement="Invoice_Approval_Process">
-      <bpmndi:BPMNShape id="Invoice_Received_di" bpmnElement="Invoice_Received">
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Minimal_Process">
+    <bpmndi:BPMNPlane id="BPMNPlane_Minimal_Process" bpmnElement="Minimal_Process">
+      <bpmndi:BPMNShape id="Start_Event_di" bpmnElement="Start_Event">
         <dc:Bounds x="57" y="52" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Capture_Invoice_di" bpmnElement="Capture_Invoice">
+      <bpmndi:BPMNShape id="Do_Work_di" bpmnElement="Do_Work">
         <dc:Bounds x="175" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Duplicate_Check_di" bpmnElement="Duplicate_Check">
-        <dc:Bounds x="325" y="30" width="100" height="80" />
-        <bpmndi:BPMNLabel />
+      <bpmndi:BPMNShape id="End_Event_di" bpmnElement="End_Event">
+        <dc:Bounds x="357" y="52" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Duplicate_Gateway_di" bpmnElement="Duplicate_Gateway" isMarkerVisible="true">
-        <dc:Bounds x="500" y="45" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Discard_Duplicate_di" bpmnElement="Discard_Duplicate">
-        <dc:Bounds x="625" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_Duplicate_di" bpmnElement="End_Duplicate">
-        <dc:Bounds x="807" y="52" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Parallel_Split_di" bpmnElement="Parallel_Split">
-        <dc:Bounds x="950" y="185" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Factual_Check_di" bpmnElement="Factual_Check">
-        <dc:Bounds x="1075" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Arithmetic_Check_di" bpmnElement="Arithmetic_Check">
-        <dc:Bounds x="1075" y="310" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Parallel_Join_di" bpmnElement="Parallel_Join">
-        <dc:Bounds x="1250" y="185" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Check_Ok_Gateway_di" bpmnElement="Check_Ok_Gateway" isMarkerVisible="true">
-        <dc:Bounds x="1400" y="185" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Reject_Invoice_di" bpmnElement="Reject_Invoice">
-        <dc:Bounds x="1525" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_Rejected_di" bpmnElement="End_Rejected">
-        <dc:Bounds x="1707" y="192" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Amount_Gateway_di" bpmnElement="Amount_Gateway" isMarkerVisible="true">
-        <dc:Bounds x="1850" y="185" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Approve_Management_di" bpmnElement="Approve_Management">
-        <dc:Bounds x="1975" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Approve_TeamLead_di" bpmnElement="Approve_TeamLead">
-        <dc:Bounds x="1975" y="310" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Approval_Join_di" bpmnElement="Approval_Join" isMarkerVisible="true">
-        <dc:Bounds x="2150" y="185" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Trigger_Payment_di" bpmnElement="Trigger_Payment">
-        <dc:Bounds x="2275" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Book_Invoice_di" bpmnElement="Book_Invoice">
-        <dc:Bounds x="2425" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Archive_Invoice_di" bpmnElement="Archive_Invoice">
-        <dc:Bounds x="2575" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_Completed_di" bpmnElement="End_Completed">
-        <dc:Bounds x="2757" y="192" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_Start_To_Capture_di" bpmnElement="Flow_Start_To_Capture">
+      <bpmndi:BPMNEdge id="Flow_Start_To_Task_di" bpmnElement="Flow_Start_To_Task">
         <di:waypoint x="93" y="70" />
         <di:waypoint x="175" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Capture_To_DuplicateCheck_di" bpmnElement="Flow_Capture_To_DuplicateCheck">
+      <bpmndi:BPMNEdge id="Flow_Task_To_End_di" bpmnElement="Flow_Task_To_End">
         <di:waypoint x="275" y="70" />
-        <di:waypoint x="325" y="70" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_DuplicateCheck_To_Gateway_di" bpmnElement="Flow_DuplicateCheck_To_Gateway">
-        <di:waypoint x="425" y="70" />
-        <di:waypoint x="500" y="70" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Duplicate_To_Discard_di" bpmnElement="Flow_Duplicate_To_Discard">
-        <di:waypoint x="550" y="70" />
-        <di:waypoint x="625" y="70" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Duplicate_To_ParallelSplit_di" bpmnElement="Flow_Duplicate_To_ParallelSplit">
-        <di:waypoint x="525" y="95" />
-        <di:waypoint x="525" y="210" />
-        <di:waypoint x="950" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Discard_To_End_di" bpmnElement="Flow_Discard_To_End">
-        <di:waypoint x="725" y="70" />
-        <di:waypoint x="807" y="70" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Split_To_FactualCheck_di" bpmnElement="Flow_Split_To_FactualCheck">
-        <di:waypoint x="1000" y="210" />
-        <di:waypoint x="1075" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Split_To_ArithmeticCheck_di" bpmnElement="Flow_Split_To_ArithmeticCheck">
-        <di:waypoint x="975" y="235" />
-        <di:waypoint x="975" y="350" />
-        <di:waypoint x="1075" y="350" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_FactualCheck_To_Join_di" bpmnElement="Flow_FactualCheck_To_Join">
-        <di:waypoint x="1175" y="210" />
-        <di:waypoint x="1250" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ArithmeticCheck_To_Join_di" bpmnElement="Flow_ArithmeticCheck_To_Join">
-        <di:waypoint x="1175" y="350" />
-        <di:waypoint x="1275" y="350" />
-        <di:waypoint x="1275" y="235" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Join_To_CheckOk_di" bpmnElement="Flow_Join_To_CheckOk">
-        <di:waypoint x="1300" y="210" />
-        <di:waypoint x="1400" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_CheckOk_To_Reject_di" bpmnElement="Flow_CheckOk_To_Reject">
-        <di:waypoint x="1450" y="210" />
-        <di:waypoint x="1525" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_CheckOk_To_AmountGateway_di" bpmnElement="Flow_CheckOk_To_AmountGateway">
-        <di:waypoint x="1425" y="235" />
-        <di:waypoint x="1425" y="280" />
-        <di:waypoint x="1875" y="280" />
-        <di:waypoint x="1875" y="235" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Reject_To_End_di" bpmnElement="Flow_Reject_To_End">
-        <di:waypoint x="1625" y="210" />
-        <di:waypoint x="1707" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Amount_To_Management_di" bpmnElement="Flow_Amount_To_Management">
-        <di:waypoint x="1900" y="210" />
-        <di:waypoint x="1975" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Amount_To_TeamLead_di" bpmnElement="Flow_Amount_To_TeamLead">
-        <di:waypoint x="1875" y="235" />
-        <di:waypoint x="1875" y="350" />
-        <di:waypoint x="1975" y="350" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Management_To_ApprovalJoin_di" bpmnElement="Flow_Management_To_ApprovalJoin">
-        <di:waypoint x="2075" y="210" />
-        <di:waypoint x="2150" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_TeamLead_To_ApprovalJoin_di" bpmnElement="Flow_TeamLead_To_ApprovalJoin">
-        <di:waypoint x="2075" y="350" />
-        <di:waypoint x="2175" y="350" />
-        <di:waypoint x="2175" y="235" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ApprovalJoin_To_Payment_di" bpmnElement="Flow_ApprovalJoin_To_Payment">
-        <di:waypoint x="2200" y="210" />
-        <di:waypoint x="2275" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Payment_To_Booking_di" bpmnElement="Flow_Payment_To_Booking">
-        <di:waypoint x="2375" y="210" />
-        <di:waypoint x="2425" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Booking_To_Archive_di" bpmnElement="Flow_Booking_To_Archive">
-        <di:waypoint x="2525" y="210" />
-        <di:waypoint x="2575" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Archive_To_End_di" bpmnElement="Flow_Archive_To_End">
-        <di:waypoint x="2675" y="210" />
-        <di:waypoint x="2757" y="210" />
+        <di:waypoint x="357" y="70" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
