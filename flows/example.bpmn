@@ -24,7 +24,7 @@
     <bpmn:endEvent id="End_Direct" name="Direkt erledigt">
       <bpmn:incoming>Flow_To_End</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:endEvent id="End_Approved" name="Ende (nach Freigabe)">
+    <bpmn:endEvent id="End_Approved" name="Nach Freigabe erledigt">
       <bpmn:incoming>Flow_From_Approval</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_Event" targetRef="Do_Task" />
