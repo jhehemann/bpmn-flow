@@ -64,7 +64,7 @@ Schritte 3 und 4 erledigt der Assistant idealerweise selbst (siehe `CLAUDE.md`).
 | `scripts/layout.mjs`       | Auto-Layout-Wrapper (`bpmn-auto-layout`)               |
 | `.bpmnlintrc`              | Lint-Regeln                                            |
 | `.vscode/extensions.json`  | Empfehlung der bpmn-io Modeler-Extension (optional)    |
-| `.vscode/settings.json`    | Workspace-Settings (Auto-Save, falls Extension genutzt)|
+| `.vscode/settings.json`    | Workspace-Settings (`.bpmn` per Default als Text öffnen)|
 | `CLAUDE.md`                | Edit-Regeln und Konventionen für den AI-Assistant      |
 | `package.json`             | Tooling-Dependencies (nicht laufzeitrelevant)          |
 
@@ -94,7 +94,7 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 
 ### Wichtig: nicht parallel zum Assistant arbeiten
 
-Der visuelle Editor reloaded externe Datei-Änderungen nicht zuverlässig. Sein WebView merkt sich den Stand vom Öffnen, und beim nächsten Save (z.B. via `autoSave: onFocusChange`) schreibt er diesen Stand auf Disk — und überschreibt damit unsichtbar Änderungen, die der Assistant zwischendurch gemacht hat.
+Der visuelle Editor reloaded externe Datei-Änderungen nicht zuverlässig. Sein WebView merkt sich den Stand vom Öffnen, und beim nächsten Save (manuell mit `Cmd+S` oder mit aktivem `files.autoSave`) schreibt er diesen Stand auf Disk — und überschreibt damit unsichtbar Änderungen, die der Assistant zwischendurch gemacht hat.
 
 Daraus folgt eine einfache Regel:
 
