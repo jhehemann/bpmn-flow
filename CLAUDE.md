@@ -57,6 +57,13 @@ Der User editiert `flows/*.bpmn` ggf. als Text oder visuell (via „Open With �
      - **Ausnahme**: Der Diff macht klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig. Wahrscheinlich hat ein offener BPMN-Editor-Tab seinen Stale-WebView-State auf Disk geschrieben. → **Stop, beim User nachfragen** und ihn bitten, den Tab zu schließen.
 2. **Nach jeder Änderung** sofort committen mit aussagekräftiger Message. Hält den Working Tree zwischen Anweisungen clean.
 
+## Commit-Message-Konvention
+
+- **Conventional Commits**: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:` als Prefix.
+- **Englisch**, Imperativ, kurze Summary-Zeile (≤ 72 Zeichen).
+- Optionaler Scope nur wenn er Wert addiert (z. B. `feat(viewer): …`); sonst weglassen.
+- Body nur bei nicht-trivialen Änderungen, mit „Was/Warum" — nicht „Wie".
+
 ## Verifikation nach jedem Edit
 
 1. `npm run validate` ist grün
