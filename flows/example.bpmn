@@ -17,7 +17,7 @@
       <bpmn:outgoing>Flow_To_End</bpmn:outgoing>
       <bpmn:outgoing>Flow_To_Approval</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Manual_Approval_Task" name="Manuelle Freigabe">
+    <bpmn:userTask id="Final_Approval_Task" name="Finale Freigabe">
       <bpmn:incoming>Flow_To_Approval</bpmn:incoming>
       <bpmn:outgoing>Flow_From_Approval</bpmn:outgoing>
     </bpmn:userTask>
@@ -31,8 +31,8 @@
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Do_Task" targetRef="Audit_Log" />
     <bpmn:sequenceFlow id="Flow_Audit_Done" sourceRef="Audit_Log" targetRef="Decision_Gateway" />
     <bpmn:sequenceFlow id="Flow_To_End" name="nein" sourceRef="Decision_Gateway" targetRef="End_Direct" />
-    <bpmn:sequenceFlow id="Flow_To_Approval" name="ja" sourceRef="Decision_Gateway" targetRef="Manual_Approval_Task" />
-    <bpmn:sequenceFlow id="Flow_From_Approval" sourceRef="Manual_Approval_Task" targetRef="End_Approved" />
+    <bpmn:sequenceFlow id="Flow_To_Approval" name="ja" sourceRef="Decision_Gateway" targetRef="Final_Approval_Task" />
+    <bpmn:sequenceFlow id="Flow_From_Approval" sourceRef="Final_Approval_Task" targetRef="End_Approved" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Process_1">
     <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="Process_1">
@@ -44,16 +44,15 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Audit_Log_di" bpmnElement="Audit_Log">
         <dc:Bounds x="325" y="30" width="100" height="80" />
-        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Decision_Gateway_di" bpmnElement="Decision_Gateway" isMarkerVisible="true">
         <dc:Bounds x="500" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Manual_Approval_Task_di" bpmnElement="Manual_Approval_Task">
-        <dc:Bounds x="625" y="170" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="End_Direct_di" bpmnElement="End_Direct">
         <dc:Bounds x="657" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Final_Approval_Task_di" bpmnElement="Final_Approval_Task">
+        <dc:Bounds x="625" y="170" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="End_Approved_di" bpmnElement="End_Approved">
         <dc:Bounds x="807" y="192" width="36" height="36" />
