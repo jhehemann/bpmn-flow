@@ -30,7 +30,7 @@ anweisen → Semantik editieren → npm run layout → npm run validate → comm
 
 1. Anweisung an den Assistant geben (Voice oder Text), z. B. „Füge nach ‚Antrag prüfen' ein exklusives Gateway mit zwei Pfaden ein."
 2. Assistant editiert die Semantik in `flows/<datei>.bpmn`.
-3. `npm run layout` ergänzt/aktualisiert das Diagramm-Interchange. Beim nächsten Wechsel in den BPMN-Tab fragt der Editor „Diagram changed externally, do you want to reload it?" → **immer „Reload" klicken** (siehe Best Practices unten).
+3. `npm run layout` ergänzt/aktualisiert das Diagramm-Interchange. Beim nächsten Wechsel in den BPMN-Tab lädt der Editor das aktualisierte Diagramm automatisch — **wenn dein Buffer clean ist**. Bei dirty Buffer (du hast visuell editiert ohne zu speichern) erscheint stattdessen der Dialog „Diagram changed externally, do you want to reload it?" → in dem Fall „Reload" klicken (siehe Best Practices unten).
 4. `npm run validate` prüft semantische Korrektheit.
 5. Visuell prüfen, präzisieren oder nächste Änderung anweisen.
 6. Sobald ein Zwischenstand sitzt: committen.
@@ -72,9 +72,10 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 - **Pro Workflow eine eigene Datei** in `flows/`. Subprocesses bleiben wo möglich inline; eigenständige End-to-End-Flows kriegen ein eigenes File.
 - **Kleine Commits.** Jeder klar abgrenzbare Zwischenstand bekommt einen eigenen Commit. Erleichtert Reverts und Reviews.
 - **`CLAUDE.md` aktiv pflegen.** Wenn der Assistant wiederholt eine Konvention verletzt, ergänze die Regel dort, nicht im Prompt.
-- **Parallele Edits — die zwei Schutzmechanismen**:
+- **Parallele Edits — wie der Schutz funktioniert**:
   1. `files.autoSave: onFocusChange` (`.vscode/settings.json`): sobald du vom BPMN-Editor ins Terminal wechselst, persistiert VS Code deinen Buffer auf Disk. Claude liest dann den aktuellen Stand statt einer Stale-Version.
-  2. **Beim Wechsel zurück in den BPMN-Tab nach einem Claude-Edit zeigt der Editor den Dialog „Diagram changed externally, do you want to reload it?" → immer „Reload" klicken.** Wenn du das ignorierst und der Buffer noch deinen alten Stand zeigt, überschreibt der nächste Save Claudes Änderungen ohne Warnung. Der Editor lädt nicht automatisch (Custom-Editor-Verhalten von `bpmn-io.vs-code-bpmn-io`).
+  2. **Bei clean Buffer** lädt der Editor Claudes externe Änderungen beim nächsten Tab-Aktivieren **automatisch und still** nach (Standard-VS-Code-Verhalten).
+  3. **Bei dirty Buffer** (du hast visuell editiert, Auto-Save hat noch nicht gegriffen) zeigt der Editor stattdessen den Dialog „Diagram changed externally, do you want to reload it?" → in dem Fall **„Reload" klicken**, sonst überschreibt dein nächster Save Claudes Änderungen kommentarlos.
 - **`.bpmn` ist Text.** Diffs im PR-Review wie jeden anderen Code lesen. Layout-Diffs sind durch `bpmn-auto-layout` deterministisch und meist klein.
 
 ## Troubleshooting
@@ -83,6 +84,7 @@ Empfehlung: per Symlink referenzieren statt kopieren (`ln -s CLAUDE.md AGENTS.md
 |------------------------------------------|----------------------------------------------------------------------------------------------|
 | VS Code zeigt rohes XML statt Diagramm   | Extension `bpmn-io.vs-code-bpmn-io` nicht installiert. VS Code schlägt sie via Workspace-Recommendations vor. |
 | `npm run validate` schlägt fehl          | Lint-Regel verletzt (z. B. Gateway ohne Default-Flow). Fehlermeldung benennt das Element.    |
-| Diagramm sieht im Editor „kaputt" aus    | Wahrscheinlich Layout veraltet — `npm run layout` ausführen, dann in den BPMN-Tab wechseln und im Dialog „Reload" klicken. |
-| Claudes Änderung kommt im Editor nicht an | Der bpmn-io-Editor reloaded nicht automatisch. In den BPMN-Tab wechseln → Dialog „Diagram changed externally" akzeptieren. Wenn der Dialog nicht erscheint: Buffer ist möglicherweise dirty mit altem Stand → Cmd+Shift+P → „Revert File". |
+| Diagramm sieht im Editor „kaputt" aus    | Wahrscheinlich Layout veraltet — `npm run layout` ausführen, dann kurz in einen anderen Tab und zurück.                       |
+| Claudes Änderung kommt im Editor nicht an | Tab-Wechsel weg und zurück triggert den Reload. Falls trotzdem alter Stand zu sehen ist (dirty Buffer): Cmd+Shift+P → „Revert File". |
+| Edge-Labels überlappen mit Linien        | Bekannte Schwäche von `bpmn-auto-layout`. Workaround: kürzere Labels oder das Element im Editor manuell verschieben (Layout-Skript überschreibt das beim nächsten Lauf wieder). |
 | Layout sieht nach `npm run layout` schlechter aus als vorher | `bpmn-auto-layout` legt Knoten in der Reihenfolge ab, in der sie im XML stehen. Reihenfolge der Elemente in `<bpmn:process>` umsortieren. |
