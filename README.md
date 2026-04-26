@@ -56,6 +56,7 @@ You issue an instruction, the assistant edits `flows/<file>.bpmn`, then runs lay
 | `.bpmnlintrc`              | Lint rules                                             |
 | `.vscode/extensions.json`  | Recommendation for the bpmn-io modeler extension       |
 | `.vscode/settings.json`    | Workspace settings (open `.bpmn` as text by default)   |
+| `.claude/settings.json`    | Claude Code permissions (auto-allow safe commands)     |
 | `CLAUDE.md`                | Edit rules and conventions for the AI assistant        |
 | `package.json`             | Tooling dependencies (not runtime-relevant)            |
 

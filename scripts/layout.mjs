@@ -11,7 +11,7 @@ const targets = args.length
       .map((f) => resolve('flows', f));
 
 if (targets.length === 0) {
-  console.error('Keine .bpmn-Dateien gefunden.');
+  console.error('No .bpmn files found.');
   process.exit(1);
 }
 
@@ -19,5 +19,5 @@ for (const file of targets) {
   const xml = await readFile(file, 'utf-8');
   const layouted = await layoutProcess(xml);
   await writeFile(file, layouted);
-  console.log(`Layout aktualisiert: ${file}`);
+  console.log(`Layout updated: ${file}`);
 }
