@@ -2,6 +2,20 @@
 
 Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-Assistant (Claude Code, Codex CLI, …) zu erstellen und zu pflegen. Du gibst per Voice oder Text Anweisungen, der Assistant editiert die Semantik in `flows/*.bpmn`, ein Layout-Skript ergänzt das Diagramm-Interchange, ein leichtgewichtiger Browser-Viewer rendert das Ergebnis live (Polling alle ~1,5 s).
 
+![Browser-Viewer mit example.bpmn](docs/viewer.png)
+
+## Quick Start
+
+```bash
+git clone https://github.com/jhehemann/bpmn-flow.git
+cd bpmn-flow
+npm install
+python3 -m http.server 8000   # in einem zweiten Terminal
+open http://localhost:8000
+```
+
+Im Viewer erscheint `flows/example.bpmn`. Editiere die Datei (oder lass den AI-Assistant sie editieren), führe `npm run layout && npm run validate` aus — der Browser reloaded automatisch.
+
 ## Konzept
 
 - **Semantik vs. Layout getrennt**: Der Assistant editiert ausschließlich die semantischen Teile der BPMN-Datei. Das Layout (Koordinaten, Waypoints, Bounds) wird per `npm run layout` automatisch generiert. So muss der Assistant keine Koordinaten ausrechnen, und PR-Diffs zeigen primär semantische Änderungen.
@@ -12,26 +26,10 @@ Toolkit, um BPMN-2.0-Diagramme iterativ mit einem AI-Coding-Assistant (Claude Co
 ## Voraussetzungen
 
 - [Node.js](https://nodejs.org/en/download) ≥ 18 (oder via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
-- Python 3 (für den HTTP-Server) oder ein beliebiger anderer statischer Webserver
+- Ein beliebiger statischer Webserver für den Viewer — `python3 -m http.server` reicht; alternativ `npx serve`, `caddy file-server` o. ä.
 - Ein moderner Browser
 - Ein AI-Coding-Assistant — entwickelt mit [Claude Code](https://docs.claude.com/en/docs/claude-code); andere Harnesses wie [Codex CLI](https://github.com/openai/codex) sollten analog funktionieren.
 - **Optional**: VS Code/Cursor mit der Extension [`bpmn-io.vs-code-bpmn-io`](https://marketplace.visualstudio.com/items?itemName=bpmn-io.vs-code-bpmn-io) für visuelles Modellieren. Beim ersten Öffnen des Repos schlägt VS Code die Installation automatisch vor.
-
-## Setup
-
-```
-npm install
-```
-
-## Live-Preview starten
-
-In einem separaten Terminal:
-
-```
-python3 -m http.server 8000
-```
-
-Browser öffnen: `http://localhost:8000`. Der Viewer entdeckt alle `flows/*.bpmn` automatisch (Dropdown oben rechts) und pollt alle ~1,5 s auf Änderungen.
 
 ## Iterativer Workflow
 
@@ -116,3 +114,7 @@ Daraus folgt eine einfache Regel:
 | `npm run validate` schlägt fehl          | Lint-Regel verletzt (z. B. unverbundenes Element). Fehlermeldung benennt Element + Regel.   |
 | Edge-Labels überlappen mit Linien        | Bekannte Schwäche von `bpmn-auto-layout`. Workaround: kürzere Labels oder akzeptieren.       |
 | BPMN-Editor zeigt veralteten Stand       | Tab schließen und via „Open With" neu öffnen, oder Cmd+Shift+P → „Developer: Reload Window".    |
+
+## Lizenz
+
+[MIT](LICENSE) © Jannik Hehemann
