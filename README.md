@@ -99,7 +99,3 @@ The visual editor's WebView caches the file state at open time and overwrites ex
 | `npm run validate` fails                 | A lint rule was violated (e.g. unconnected element). The error message names element + rule. |
 | Edge labels overlap with lines           | Known weakness of `bpmn-auto-layout`. Workaround: shorter labels or accept it.               |
 | BPMN editor shows a stale state          | Close the tab and reopen via "Open With", or Cmd+Shift+P → "Developer: Reload Window".       |
-
-## License
-
-[MIT](LICENSE) © Jannik Hehemann
