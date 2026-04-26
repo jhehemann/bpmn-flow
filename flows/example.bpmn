@@ -4,7 +4,7 @@
     <bpmn:startEvent id="Start_Event" name="Start">
       <bpmn:outgoing>Flow_Start_To_Task</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:task id="Do_Work" name="Aufgabe erledigen">
+    <bpmn:task id="Do_Work" name="Do work">
       <bpmn:incoming>Flow_Start_To_Task</bpmn:incoming>
       <bpmn:outgoing>Flow_Task_To_End</bpmn:outgoing>
     </bpmn:task>

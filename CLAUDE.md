@@ -1,72 +1,72 @@
 # CLAUDE.md — bpmn-flow
 
-## Projektkontext
+## Project context
 
-Iteratives BPMN-Editing per Voice-/Text-Input. Live-Preview erfolgt primär im **Browser-Viewer** (`index.html` mit Polling alle ~1,5 s). Auto-Layout via `npm run layout`, Validierung via `npm run validate`.
+Iterative BPMN editing via voice/text input. Live preview happens primarily in the **browser viewer** (`index.html` polling every ~1.5 s). Auto-layout via `npm run layout`, validation via `npm run validate`.
 
-- **`flows/*.bpmn`** — eine Datei pro Workflow. Du editierst die Semantik dort.
-- VS Code öffnet `.bpmn` per Default als Text. Der User kann optional via „Open With → BPMN Editor" visuell editieren.
-- Tooling-Dependencies in `package.json` (`bpmn-auto-layout`, `bpmnlint`).
+- **`flows/*.bpmn`** — one file per workflow. You edit the semantics there.
+- VS Code opens `.bpmn` as text by default. The user can optionally edit visually via "Open With → BPMN Editor".
+- Tooling dependencies in `package.json` (`bpmn-auto-layout`, `bpmnlint`).
 
-## Edit-Regel (zentral)
+## Edit rule (central)
 
-**Editiere nur die Semantik unter `<bpmn:process>`. Lass DI-Blöcke (`<bpmndi:...>`) so wie sie sind oder lösche sie.** Layout wird per `npm run layout` deterministisch (re-)generiert. Du musst keine Koordinaten ausrechnen.
+**Only edit the semantics under `<bpmn:process>`. Leave `<bpmndi:...>` blocks alone or delete them.** The layout is regenerated deterministically via `npm run layout`. You don't need to compute coordinates.
 
-Bei jedem Edit:
-- Knoten als `<bpmn:...>` in `<bpmn:process>` anlegen, mit lesbarer ID (`Approve_Task` statt `Task_2`).
-- **Jeder Knoten braucht ein `name`-Attribut** — auch Start- und End-Events (z. B. `name="Start"`, `name="Done"`). `bpmnlint` schlägt sonst mit `label-required` fehl.
-- Sequence Flow als `<bpmn:sequenceFlow>` plus passende `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel.
-- Danach: `npm run layout` (regeneriert DI), dann `npm run validate` (lintet).
+For every edit:
+- Add nodes as `<bpmn:...>` inside `<bpmn:process>` with a readable ID (`Approve_Task`, not `Task_2`).
+- **Every node needs a `name` attribute** — including start and end events (e.g. `name="Start"`, `name="Done"`). Otherwise `bpmnlint` fails with `label-required`.
+- Sequence flows as `<bpmn:sequenceFlow>` plus matching `<bpmn:incoming>`/`<bpmn:outgoing>` on source/target.
+- Then: `npm run layout` (regenerates DI), then `npm run validate` (lints).
 
-Die bestehende Datei in `flows/` ist die beste Referenz für die Struktur.
+The existing files in `flows/` are the best reference for structure.
 
-## Workflow nach jedem Edit
+## Workflow after every edit
 
 ```
-edit → npm run layout → npm run validate → committen
+edit → npm run layout → npm run validate → commit
 ```
 
-1. `npm run layout` — schreibt aktuelle Layouts in `flows/*.bpmn`. Optional gezielt: `npm run layout -- flows/foo.bpmn`.
-2. `npm run validate` — `bpmnlint`. Fehler beheben, bevor du committest.
-3. Commit mit aussagekräftiger Message.
+1. `npm run layout` — writes current layouts into `flows/*.bpmn`. Optionally targeted: `npm run layout -- flows/foo.bpmn`.
+2. `npm run validate` — `bpmnlint`. Fix errors before committing.
+3. Commit with a meaningful message.
 
-## Multi-File
+## Multi-file
 
-- Pro eigenständigem End-to-End-Workflow eine eigene Datei in `flows/`.
-- Subprocesses bleiben standardmäßig inline (`<bpmn:subProcess>`) — separate Datei nur, wenn ein Subprocess wiederverwendbar wird.
-- Datei-Naming: `kebab-case.bpmn`, sprechend (`order-approval.bpmn`, nicht `flow1.bpmn`).
+- One file per standalone end-to-end workflow in `flows/`.
+- Subprocesses stay inline (`<bpmn:subProcess>`) by default — only split into a separate file when a subprocess becomes reusable.
+- File naming: `kebab-case.bpmn`, descriptive (`order-approval.bpmn`, not `flow1.bpmn`).
 
-## ID-Konvention
+## ID convention
 
-Lesbare Namen statt Nummern: `Approve_Task` statt `Task_2`, `Decision_Gateway` statt `Gateway_1`. Erleichtert iterative Edits, weil der User per Voice gezielt referenzieren kann.
+Readable names instead of numbers: `Approve_Task` not `Task_2`, `Decision_Gateway` not `Gateway_1`. Makes iterative edits easier because the user can reference elements precisely by voice.
 
-## Was NICHT tun
+## What NOT to do
 
-- **Keine Koordinaten manuell setzen.** DI ist generiert; manuelle Edits werden beim nächsten `npm run layout` überschrieben.
-- **Keine zusätzlichen Build-Tools** (Vite, Webpack, Bundler) einführen — Tooling beschränkt sich auf `bpmn-auto-layout` + `bpmnlint`.
-- **Keine zusätzlichen Top-Level-Verzeichnisse** anlegen, außer der User fragt danach. Diagramme gehören nach `flows/`, Skripte nach `scripts/`, der Viewer nach `index.html`.
+- **Don't set coordinates manually.** DI is generated; manual edits are overwritten on the next `npm run layout`.
+- **Don't introduce additional build tooling** (Vite, Webpack, bundlers) — tooling stays limited to `bpmn-auto-layout` + `bpmnlint`.
+- **Don't create additional top-level directories** unless the user asks. Diagrams belong in `flows/`, scripts in `scripts/`, the viewer is `index.html`.
 
-## Commit-Workflow
+## Commit workflow
 
-Der User editiert `flows/*.bpmn` ggf. als Text oder visuell (via „Open With → BPMN Editor"). Konvention: visuelles Editieren und Assistant-Edits sind sequenziell, nicht parallel — der User schließt den BPMN-Editor-Tab, bevor er dich beauftragt.
+The user may edit `flows/*.bpmn` as text or visually (via "Open With → BPMN Editor"). Convention: visual editing and assistant edits are sequential, not parallel — the user closes the BPMN editor tab before instructing you.
 
-1. **Vor jeder Änderung** `git status` prüfen.
-   - Clean → loslegen.
-   - Dirty → `git diff HEAD -- flows/` prüfen:
-     - **Normalfall** (Additionen, kleine Korrekturen, Auto-Layout-Drift): still als `chore: editor edits` committen und weiterarbeiten. **Nicht nachfragen.**
-     - **Ausnahme**: Der Diff macht klar erkennbar einen substantiellen Teil meines letzten Commits rückgängig. Wahrscheinlich hat ein offener BPMN-Editor-Tab seinen Stale-WebView-State auf Disk geschrieben. → **Stop, beim User nachfragen** und ihn bitten, den Tab zu schließen.
-2. **Nach jeder Änderung** sofort committen mit aussagekräftiger Message. Hält den Working Tree zwischen Anweisungen clean.
+1. **Before every change**, run `git status`.
+   - Clean → proceed.
+   - Dirty → run `git diff HEAD -- flows/`:
+     - **Normal case** (additions, small corrections, auto-layout drift): silently commit as `chore: editor edits` and continue. **Don't ask.**
+     - **Exception**: the diff clearly reverts a substantial part of my last commit. An open BPMN editor tab has likely written its stale WebView state to disk. → **Stop, ask the user** and request that they close the tab.
+2. **After every change**, commit immediately with a meaningful message. Keeps the working tree clean between instructions.
 
-## Commit-Message-Konvention
+## Commit message convention
 
-- **Conventional Commits**: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:` als Prefix.
-- **Englisch**, Imperativ, kurze Summary-Zeile (≤ 72 Zeichen).
-- Optionaler Scope nur wenn er Wert addiert (z. B. `feat(viewer): …`); sonst weglassen.
-- Body nur bei nicht-trivialen Änderungen, mit „Was/Warum" — nicht „Wie".
+- **Conventional Commits**: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:` as prefix.
+- **English**, imperative, short summary line (≤ 72 characters).
+- Optional scope only when it adds value (e.g. `feat(viewer): …`); otherwise omit.
+- Body only for non-trivial changes, with "what/why" — not "how".
 
-## Verifikation nach jedem Edit
+## Verification after every edit
 
-1. `npm run validate` ist grün
-2. Jeder Sequence Flow als `<bpmn:sequenceFlow>` plus `<bpmn:incoming>`/`<bpmn:outgoing>` an Quelle/Ziel
-3. IDs eindeutig und sprechend
-4. Bei Unsicherheit: User bitten, das Diagramm im Browser-Viewer zu prüfen
+1. `npm run validate` is green
+2. Every sequence flow exists as `<bpmn:sequenceFlow>` plus `<bpmn:incoming>`/`<bpmn:outgoing>` on source/target
+3. IDs are unique and descriptive
+4. When in doubt: ask the user to inspect the diagram in the browser viewer
