@@ -8,8 +8,12 @@
       <bpmn:incoming>Flow_1</bpmn:incoming>
       <bpmn:outgoing>Flow_2</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:exclusiveGateway id="Decision_Gateway" name="Freigabe nötig?">
+    <bpmn:serviceTask id="Audit_Log" name="Audit Log schreiben">
       <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Audit_Done</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Decision_Gateway" name="Freigabe nötig?">
+      <bpmn:incoming>Flow_Audit_Done</bpmn:incoming>
       <bpmn:outgoing>Flow_To_End</bpmn:outgoing>
       <bpmn:outgoing>Flow_To_Approval</bpmn:outgoing>
     </bpmn:exclusiveGateway>
@@ -24,7 +28,8 @@
       <bpmn:incoming>Flow_From_Approval</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_Event" targetRef="Do_Task" />
-    <bpmn:sequenceFlow id="Flow_2" sourceRef="Do_Task" targetRef="Decision_Gateway" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Do_Task" targetRef="Audit_Log" />
+    <bpmn:sequenceFlow id="Flow_Audit_Done" sourceRef="Audit_Log" targetRef="Decision_Gateway" />
     <bpmn:sequenceFlow id="Flow_To_End" name="nein" sourceRef="Decision_Gateway" targetRef="End_Direct" />
     <bpmn:sequenceFlow id="Flow_To_Approval" name="ja" sourceRef="Decision_Gateway" targetRef="Manual_Approval_Task" />
     <bpmn:sequenceFlow id="Flow_From_Approval" sourceRef="Manual_Approval_Task" targetRef="End_Approved" />
@@ -37,17 +42,20 @@
       <bpmndi:BPMNShape id="Do_Task_di" bpmnElement="Do_Task">
         <dc:Bounds x="175" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Audit_Log_di" bpmnElement="Audit_Log">
+        <dc:Bounds x="325" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Decision_Gateway_di" bpmnElement="Decision_Gateway" isMarkerVisible="true">
-        <dc:Bounds x="350" y="45" width="50" height="50" />
+        <dc:Bounds x="500" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="End_Direct_di" bpmnElement="End_Direct">
-        <dc:Bounds x="507" y="52" width="36" height="36" />
+        <dc:Bounds x="657" y="52" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Manual_Approval_Task_di" bpmnElement="Manual_Approval_Task">
-        <dc:Bounds x="475" y="170" width="100" height="80" />
+        <dc:Bounds x="625" y="170" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="End_Approved_di" bpmnElement="End_Approved">
-        <dc:Bounds x="657" y="192" width="36" height="36" />
+        <dc:Bounds x="807" y="192" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
         <di:waypoint x="93" y="70" />
@@ -55,20 +63,24 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
         <di:waypoint x="275" y="70" />
-        <di:waypoint x="350" y="70" />
+        <di:waypoint x="325" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Audit_Done_di" bpmnElement="Flow_Audit_Done">
+        <di:waypoint x="425" y="70" />
+        <di:waypoint x="500" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_To_End_di" bpmnElement="Flow_To_End">
-        <di:waypoint x="400" y="70" />
-        <di:waypoint x="507" y="70" />
+        <di:waypoint x="550" y="70" />
+        <di:waypoint x="657" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_To_Approval_di" bpmnElement="Flow_To_Approval">
-        <di:waypoint x="375" y="95" />
-        <di:waypoint x="375" y="210" />
-        <di:waypoint x="475" y="210" />
+        <di:waypoint x="525" y="95" />
+        <di:waypoint x="525" y="210" />
+        <di:waypoint x="625" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_From_Approval_di" bpmnElement="Flow_From_Approval">
-        <di:waypoint x="575" y="210" />
-        <di:waypoint x="657" y="210" />
+        <di:waypoint x="725" y="210" />
+        <di:waypoint x="807" y="210" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
